@@ -4,7 +4,7 @@ Fixtures for testing integrations of axe-core. All fixtures can be found in the 
 
 ## Tests
 
-Using the fixtures, the following tests should be applied to the project (code written using a JavaScript Selenium-like framework).
+Using the fixtures, the following tests should be applied to the project (code written using a JavaScript Selenium-like framework). For testing axe.run "legacy" code path, any axe-core version prior to 4.3.0 will work.
 
 ```js
 const axeSource = fs.readFileSync('axe-core@4.3.2.js', 'utf8');
