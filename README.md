@@ -8,8 +8,8 @@ Using the fixtures, the following tests should be applied to the project (code w
 
 ```js
 const axeSource = fs.readFileSync('axe-core@4.3.2.js', 'utf8');
-const legacyAxeSource = fs.readFileSync('axe-core@legacy.js', 'utf8');
-const axeCrasherSource = fs.readFileSync('axe-crasher.js', 'utf8');
+const legacyAxeSource = fs.readFileSync('fixtures/axe-core@legacy.js', 'utf8');
+const axeCrasherSource = fs.readFileSync('fixtures/axe-crasher.js', 'utf8');
 
 describe('analyze', () => {
   // ...
