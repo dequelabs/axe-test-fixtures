@@ -1,0 +1,18 @@
+{
+  "name": "axe-test-fixtures",
+  "version": "1.0.0",
+  "description": "Fixtures for testing integrations of axe-core",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dequelabs/axe-test-fixtures.git"
+  },
+  "author": "",
+  "license": "MPL-2.0",
+  "bugs": {
+    "url": "https://github.com/dequelabs/axe-test-fixtures/issues"
+  },
+  "homepage": "https://github.com/dequelabs/axe-test-fixtures#readme"
+}
