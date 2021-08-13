@@ -180,6 +180,10 @@ describe('for versions without axe.runPartial', () => {
 });
 
 describe('with a custom ruleset', () => {
+  // These test should only be added to integrations that support .configure()
+  // Not all integrations do. Do NOT add .configure() support to integrations
+  // that do not have it.
+
   const dylangConfig = require('./fixtures/dylang-config.json');
 
   it('should find violations with customized helpUrl', async function () {
