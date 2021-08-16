@@ -178,4 +178,47 @@ describe('for versions without axe.runPartial', () => {
     assert.lengthOf(results.violations[0].nodes, 2);
   });
 });
+
+describe('with a custom ruleset', () => {
+  // These test should only be added to integrations that support .configure()
+  // Not all integrations do. Do NOT add .configure() support to integrations
+  // that do not have it.
+
+  const dylangConfig = require('./fixtures/dylang-config.json');
+
+  it('should find violations with customized helpUrl', async function () {
+    await page.goto(`${addr}/index.html`);
+    const { violations, passes } = await new AxePuppeteer(page)
+      .configure(dylangConfig).analyze();
+
+    assert.lengthOf(passes, 0);
+    assert.lengthOf(violations, 1);
+    assert.equal(violations[0].id, 'dylang');
+    assert.lengthOf(violations[0].nodes, 1);
+  });
+
+  it('configures in nested frames', async function () {
+    await page.goto(`${addr}/nested-iframes.html`);
+    const { violations } = await new AxePuppeteer(page)
+      .configure(dylangConfig)
+      .analyze();
+
+    assert.lengthOf(violations, 1);
+    assert.equal(violations[0].id, 'dylang');
+    assert.lengthOf(violations[0].nodes, 8);
+  });
+
+  it('works without runPartial', async () => {
+    const axePath = require.resolve('./fixtures/axe-core@legacy.js');
+    const axe403Source = fs.readFileSync(axePath, 'utf8');
+    await page.goto(`${addr}/external/nested-iframes.html`);
+    const { violations } = await new AxePuppeteer(page, axe403Source)
+      .configure(dylangConfig)
+      .analyze();
+
+    assert.lengthOf(violations, 1);
+    assert.equal(violations[0].id, 'dylang');
+    assert.lengthOf(violations[0].nodes, 8);
+  });
+})
 ```
