@@ -168,7 +168,7 @@ describe('for versions without axe.runPartial', () => {
 
   it('reports frame-tested', async () => {
     await driver.get(`${addr}/crash-parent.html`);
-    const results = await new AxeBuilder(driver, axeSource + axeCrasherSource)
+    const results = await new AxeBuilder(driver, legacyAxeSource + axeCrasherSource)
       .options({ runOnly: ['label', 'frame-tested'] })
       .analyze();
 
@@ -210,9 +210,9 @@ describe('with a custom ruleset', () => {
 
   it('works without runPartial', async () => {
     const axePath = require.resolve('./fixtures/axe-core@legacy.js');
-    const axe403Source = fs.readFileSync(axePath, 'utf8');
+    const legacyAxeSource = fs.readFileSync(axePath, 'utf8');
     await page.goto(`${addr}/external/nested-iframes.html`);
-    const { violations } = await new AxePuppeteer(page, axe403Source)
+    const { violations } = await new AxePuppeteer(page, legacyAxeSource)
       .configure(dylangConfig)
       .analyze();
 
