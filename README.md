@@ -97,7 +97,7 @@ describe('frame tests', () => {
   });
 
   it('should work on shadow DOM iframes', async () => {
-    await driver.get(`${addr}/shadow-iframes.html`);
+    await driver.get(`${addr}/shadow-frames.html`);
     const { violations } = await new AxeBuilder(driver)
       .options({ runOnly: 'label' })
       .analyze();
