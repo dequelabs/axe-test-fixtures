@@ -57,8 +57,7 @@ describe('analyze', () => {
   // Ensure it is set up.
   it('properly isolates the call to axe.finishRun', () => {
     await driver.get('${addr}/isolated-finish.html')
-    const runAxe = () => new AxeBuilder(driver).analyze();
-    assert.isRejected(runAxe, /PWNED/)
+    assert.isRejected(new AxeBuilder(driver).analyze(), /PWNED/)
   })
 });
 
