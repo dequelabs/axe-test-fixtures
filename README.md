@@ -52,6 +52,12 @@ describe('analyze', () => {
         () => done()
       );
   });
+
+  it('properly isolates the call to axe.finishRun', () => {
+    await driver.get('${addr}/isolated-finish.html')
+    // Will throw if not isolated.
+    await new AxeBuilder(driver).analyze();
+  })
 });
 
 describe('frame tests', () => {

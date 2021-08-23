@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Test</title>
+    <script>
+      const oldOpen = window.open;
+      window.open = function() {
+        const win = oldOpen(...arguments);
+        const doc = win.document;
+        const scr = doc.createElement('script');
+        scr.innerHTML = `
+          Object.defineProperties(window, {
+            _my_axe: {
+              value: undefined,
+             writable: true
+            },
+            axe: {
+              get: function() {
+                return this._my_axe;
+              },
+              set: function(axe) {
+                this._my_axe = axe;
+                axe.finishRun = () => { throw new Error('PWNED'); }
+              }
+            }
+          });
+        `;
+        doc.body.appendChild(scr);
+      }
+    </script>
+  </head>
+  <body>
+    <input type="text" />
+  </body>
+</html>
+
