@@ -28,6 +28,23 @@
         doc.body.appendChild(scr);
       }
     </script>
+    <script>
+      Object.defineProperties(window, {
+        _my_axe: {
+          value: undefined,
+          writable: true
+        },
+        axe: {
+          get: function() {
+            return this._my_axe;
+          },
+          set: function(axe) {
+            this._my_axe = axe;
+            axe.finishRun = () => { throw new Error('PWNED'); }
+          }
+        }
+      });
+    </script>
   </head>
   <body>
     <input type="text" />
