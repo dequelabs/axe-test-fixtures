@@ -20,7 +20,14 @@
               },
               set: function(axe) {
                 this._my_axe = axe;
-                axe.finishRun = () => { throw new Error('PWNED'); }
+                Object.defineProperties(axe, {
+                  finishRun: {
+                    set: function() {},
+                    get: function() {
+                      return () => { throw new Error('PWNED'); }
+                    }
+                  }
+                })
               }
             }
           });
@@ -40,7 +47,14 @@
           },
           set: function(axe) {
             this._my_axe = axe;
-            axe.finishRun = () => { throw new Error('PWNED'); }
+            Object.defineProperties(axe, {
+              finishRun: {
+                set: function() {},
+                get: function() {
+                  return () => { throw new Error('PWNED'); }
+                }
+              }
+            })
           }
         }
       });
