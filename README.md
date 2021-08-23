@@ -52,6 +52,13 @@ describe('analyze', () => {
         () => done()
       );
   });
+
+  // This test uses chai-as-promised for async assert.
+  // Ensure it is set up.
+  it('properly isolates the call to axe.finishRun', () => {
+    await driver.get('${addr}/isolated-finish.html')
+    assert.isFulfilled(new AxeBuilder(driver).analyze())
+  })
 });
 
 describe('frame tests', () => {
