@@ -60,7 +60,7 @@ describe('analyze', () => {
     assert.isFulfilled(new AxeBuilder(driver).analyze())
   })
 
-  it('returns correct results metadata', () => {
+  it('returns correct results metadata', async () => {
     await driver.get(`${addr}/index.html`);
     const results = await new AxeBuilder(driver).analyze();
     assert.isDefined(results.testEngine.name)
