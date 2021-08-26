@@ -140,13 +140,14 @@ describe('frame tests', () => {
 
   it('returns the same results from runPartial as from legacy mode', async () => {
     await driver.get(`${addr}/nested-iframes.html`);
-    const normalResults = await new AxeBuilder(driver, axeSource).analyze();
+    const legacyResults = await new AxeBuilder(
+      driver, axeSource + axeForceLegacy
+    ).analyze();
+    assert.equal(legacyResults.testEngine.name, 'axe-legacy');
 
-    const legacyResults = await new AxeBuilder(driver, axeSource + `;
-      delete window.axe.runPartial;
-      delete window.axe.finishRun;
-    `).analyze();
+    const normalResults = await new AxeBuilder(driver, axeSource).analyze();
     normalResults.timestamp = legacyResults.timestamp;
+    normalResults.testEngine.name = legacyResults.testEngine.name;
     assert.deepEqual(normalResults, legacyResults);
   });
 });
