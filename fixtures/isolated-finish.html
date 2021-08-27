@@ -6,33 +6,28 @@
       const oldOpen = window.open;
       window.open = function() {
         const win = oldOpen(...arguments);
-        const doc = win.document;
-        const scr = doc.createElement('script');
-        scr.innerHTML = `
-          Object.defineProperties(window, {
-            _my_axe: {
-              value: undefined,
-              writable: true
+        win.Object.defineProperties(win, {
+          _my_axe: {
+            value: undefined,
+            writable: true
+          },
+          axe: {
+            get: function() {
+              return this._my_axe;
             },
-            axe: {
-              get: function() {
-                return this._my_axe;
-              },
-              set: function(axe) {
-                this._my_axe = axe;
-                Object.defineProperties(axe, {
-                  finishRun: {
-                    set: function() {},
-                    get: function() {
-                      return () => { throw new Error('PWNED'); }
-                    }
+            set: function(axe) {
+              this._my_axe = axe;
+              Object.defineProperties(axe, {
+                finishRun: {
+                  set: function() {},
+                  get: function() {
+                    return () => { throw new Error('PWNED'); }
                   }
-                })
-              }
+                }
+              })
             }
-          });
-        `;
-        doc.body.appendChild(scr);
+          }
+        });
       }
     </script>
     <script>
