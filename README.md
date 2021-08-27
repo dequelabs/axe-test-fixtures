@@ -159,6 +159,19 @@ describe('frame tests', () => {
       'input'
     ]);
   });
+
+  it('returns the same results from runPartial as from legacy mode', async () => {
+    await driver.get(`${addr}/nested-iframes.html`);
+    const legacyResults = await new AxeBuilder(
+      driver, axeSource + axeForceLegacy
+    ).analyze();
+    assert.equal(legacyResults.testEngine.name, 'axe-legacy');
+
+    const normalResults = await new AxeBuilder(driver, axeSource).analyze();
+    normalResults.timestamp = legacyResults.timestamp;
+    normalResults.testEngine.name = legacyResults.testEngine.name;
+    assert.deepEqual(normalResults, legacyResults);
+  });
 });
 
 describe('for versions without axe.runPartial', () => {
