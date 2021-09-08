@@ -212,6 +212,16 @@ describe('for versions without axe.runPartial', () => {
     assert.equal(results.violations[0].id, 'label');
     assert.lengthOf(results.violations[0].nodes, 2);
   });
+
+  it('tests cross-origin pages', async () => {
+    await driver.get(`${addr}/cross-origin.html`);
+    const results = await new AxeBuilder(driver, axe403Source)
+      .withRules(['frame-tested'])
+      .analyze();
+
+    const frameTested = results.incomplete.find(({ id }) => id === 'frame-tested');
+    assert.isUndefined(frameTested);
+  })
 });
 
 describe('with a custom ruleset', () => {
@@ -255,5 +265,39 @@ describe('with a custom ruleset', () => {
     assert.equal(violations[0].id, 'dylang');
     assert.lengthOf(violations[0].nodes, 8);
   });
+})
+
+describe('setLegacyMode', () => {
+  const runPartialThrows = `;axe.runPartial = () => { throw new Error("No runPartial")}`
+  it('runs legacy mode when used', async () => {
+    await driver.get(`${addr}/external/index.html`);
+    const results = await new AxeBuilder(driver, axeSource + runPartialThrows )
+      .setLegacyMode()
+      .analyze();
+    assert.isNotNull(results);
+  })
+  
+  it('prevents cross-origin frame testing', async () => {
+    await driver.get(`${addr}/cross-origin.html`);
+    const results = await new AxeBuilder(driver, axeSource + runPartialThrows)
+      .withRules(['frame-tested'])
+      .setLegacyMode()
+      .analyze();
+
+    const frameTested = results.incomplete.find(({ id }) => id === 'frame-tested');
+    assert.ok(frameTested);
+  })
+
+  it('can be disabled again', async () => {
+    await driver.get(`${addr}/cross-origin.html`);
+    const results = await new AxeBuilder(driver)
+      .withRules(['frame-tested'])
+      .setLegacyMode()
+      .setLegacyMode(false)
+      .analyze();
+
+    const frameTested = results.incomplete.find(({ id }) => id === 'frame-tested');
+    assert.isUndefined(frameTested);
+  })
 })
 ```
