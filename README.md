@@ -268,9 +268,10 @@ describe('with a custom ruleset', () => {
 })
 
 describe('setLegacyMode', () => {
+  const runPartialThrows = `;axe.runPartial = () => { throw new Error("No runPartial")}`
   it('runs legacy mode when used', async () => {
     await driver.get(`${addr}/external/index.html`);
-    const results = await new AxeBuilder(driver, `${axeSource};delete axe.runPartial`)
+    const results = await new AxeBuilder(driver, axeSource + runPartialThrows )
       .setLegacyMode()
       .analyze();
     assert.isNotNull(results);
@@ -278,7 +279,7 @@ describe('setLegacyMode', () => {
   
   it('prevents cross-origin frame testing', async () => {
     await driver.get(`${addr}/cross-origin.html`);
-    const results = await new AxeBuilder(driver, `${axeSource};delete axe.runPartial`)
+    const results = await new AxeBuilder(driver, axeSource + runPartialThrows)
       .withRules(['frame-tested'])
       .setLegacyMode()
       .analyze();
