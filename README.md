@@ -52,6 +52,28 @@ describe('analyze', () => {
         () => done()
       );
   });
+
+  // This test uses chai-as-promised for async assert.
+  // Ensure it is set up.
+  it('properly isolates the call to axe.finishRun', () => {
+    await driver.get('${addr}/isolated-finish.html')
+    assert.isFulfilled(new AxeBuilder(driver).analyze())
+  })
+
+  it('returns correct results metadata', async () => {
+    await driver.get(`${addr}/index.html`);
+    const results = await new AxeBuilder(driver).analyze();
+    assert.isDefined(results.testEngine.name)
+    assert.isDefined(results.testEngine.version)
+    assert.isDefined(results.testEnvironment.orientationAngle)
+    assert.isDefined(results.testEnvironment.orientationType)
+    assert.isDefined(results.testEnvironment.userAgent)
+    assert.isDefined(results.testEnvironment.windowHeight)
+    assert.isDefined(results.testEnvironment.windowWidth)
+    assert.isDefined(results.testRunner.name)
+    assert.isDefined(results.toolOptions.reporter)
+    assert.equal(results.url, `${addr}/index.html`)
+  })
 });
 
 describe('frame tests', () => {
