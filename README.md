@@ -305,7 +305,7 @@ describe('axe.finishRun errors', () => {
   const windowOpenThrows = `;window.open = () => { throw new Error("No window.open")}`
   const finishRunThrows = `;axe.finishRun = () => { throw new Error("No finishRun")}`
   it('throws an error if window.open throws', async () => {
-    await driver.get(`${adder}/index.html`)
+    await driver.get(`${addr}/index.html`)
     try {
       await new AxeBuilder(driver, axeSource + windowOpenThrows).analyze()
       assert.fail("Should have thrown")
@@ -315,7 +315,7 @@ describe('axe.finishRun errors', () => {
   })
 
   it('throws an error if axe.finishRun throws', async () => {
-    await driver.get(`${adder}/index.html`)
+    await driver.get(`${addr}/index.html`)
     try {
       await new AxeBuilder(driver, axeSource + finishRunThrows).analyze()
       assert.fail("Should have thrown")
