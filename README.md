@@ -256,7 +256,7 @@ describe('with a custom ruleset', () => {
   it('works without runPartial', async () => {
     const axePath = require.resolve('./fixtures/axe-core@legacy.js');
     const legacyAxeSource = fs.readFileSync(axePath, 'utf8');
-    await page.goto(`${addr}/external/nested-iframes.html`);
+    await page.goto(`${addr}/nested-iframes.html`);
     const { violations } = await new AxePuppeteer(page, legacyAxeSource)
       .configure(dylangConfig)
       .analyze();
@@ -270,7 +270,7 @@ describe('with a custom ruleset', () => {
 describe('setLegacyMode', () => {
   const runPartialThrows = `;axe.runPartial = () => { throw new Error("No runPartial")}`
   it('runs legacy mode when used', async () => {
-    await driver.get(`${addr}/external/index.html`);
+    await driver.get(`${addr}/index.html`);
     const results = await new AxeBuilder(driver, axeSource + runPartialThrows )
       .setLegacyMode()
       .analyze();
