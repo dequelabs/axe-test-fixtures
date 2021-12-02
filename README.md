@@ -52,6 +52,28 @@ describe("analyze", () => {
         () => done()
       );
   });
+
+  // This test uses chai-as-promised for async assert.
+  // Ensure it is set up.
+  it('properly isolates the call to axe.finishRun', () => {
+    await driver.get('${addr}/isolated-finish.html')
+    assert.isFulfilled(new AxeBuilder(driver).analyze())
+  })
+
+  it('returns correct results metadata', async () => {
+    await driver.get(`${addr}/index.html`);
+    const results = await new AxeBuilder(driver).analyze();
+    assert.isDefined(results.testEngine.name)
+    assert.isDefined(results.testEngine.version)
+    assert.isDefined(results.testEnvironment.orientationAngle)
+    assert.isDefined(results.testEnvironment.orientationType)
+    assert.isDefined(results.testEnvironment.userAgent)
+    assert.isDefined(results.testEnvironment.windowHeight)
+    assert.isDefined(results.testEnvironment.windowWidth)
+    assert.isDefined(results.testRunner.name)
+    assert.isDefined(results.toolOptions.reporter)
+    assert.equal(results.url, `${addr}/index.html`)
+  })
 });
 
 describe("frame tests", () => {
@@ -135,6 +157,19 @@ describe("frame tests", () => {
       "input",
     ]);
   });
+
+  it('returns the same results from runPartial as from legacy mode', async () => {
+    await driver.get(`${addr}/nested-iframes.html`);
+    const legacyResults = await new AxeBuilder(
+      driver, axeSource + axeForceLegacy
+    ).analyze();
+    assert.equal(legacyResults.testEngine.name, 'axe-legacy');
+
+    const normalResults = await new AxeBuilder(driver, axeSource).analyze();
+    normalResults.timestamp = legacyResults.timestamp;
+    normalResults.testEngine.name = legacyResults.testEngine.name;
+    assert.deepEqual(normalResults, legacyResults);
+  });
 });
 
 describe("for versions without axe.runPartial", () => {
@@ -178,6 +213,16 @@ describe("for versions without axe.runPartial", () => {
     assert.equal(results.violations[0].id, "label");
     assert.lengthOf(results.violations[0].nodes, 2);
   });
+
+  it('tests cross-origin pages', async () => {
+    await driver.get(`${addr}/cross-origin.html`);
+    const results = await new AxeBuilder(driver, axe403Source)
+      .withRules(['frame-tested'])
+      .analyze();
+
+    const frameTested = results.incomplete.find(({ id }) => id === 'frame-tested');
+    assert.isUndefined(frameTested);
+  })
 });
 
 describe("with a custom ruleset", () => {
@@ -210,10 +255,10 @@ describe("with a custom ruleset", () => {
     assert.lengthOf(violations[0].nodes, 8);
   });
 
-  it("works without runPartial", async () => {
-    const axePath = require.resolve("./fixtures/axe-core@legacy.js");
-    const legacyAxeSource = fs.readFileSync(axePath, "utf8");
-    await page.goto(`${addr}/external/nested-iframes.html`);
+  it('works without runPartial', async () => {
+    const axePath = require.resolve('./fixtures/axe-core@legacy.js');
+    const legacyAxeSource = fs.readFileSync(axePath, 'utf8');
+    await page.goto(`${addr}/nested-iframes.html`);
     const { violations } = await new AxePuppeteer(page, legacyAxeSource)
       .configure(dylangConfig)
       .analyze();
@@ -292,4 +337,63 @@ describe("with a custom ruleset", () => {
     });
   });
 });
+})
+
+describe('setLegacyMode', () => {
+  const runPartialThrows = `;axe.runPartial = () => { throw new Error("No runPartial")}`
+  it('runs legacy mode when used', async () => {
+    await driver.get(`${addr}/index.html`);
+    const results = await new AxeBuilder(driver, axeSource + runPartialThrows )
+      .setLegacyMode()
+      .analyze();
+    assert.isNotNull(results);
+  })
+  
+  it('prevents cross-origin frame testing', async () => {
+    await driver.get(`${addr}/cross-origin.html`);
+    const results = await new AxeBuilder(driver, axeSource + runPartialThrows)
+      .withRules(['frame-tested'])
+      .setLegacyMode()
+      .analyze();
+
+    const frameTested = results.incomplete.find(({ id }) => id === 'frame-tested');
+    assert.ok(frameTested);
+  })
+
+  it('can be disabled again', async () => {
+    await driver.get(`${addr}/cross-origin.html`);
+    const results = await new AxeBuilder(driver)
+      .withRules(['frame-tested'])
+      .setLegacyMode()
+      .setLegacyMode(false)
+      .analyze();
+
+    const frameTested = results.incomplete.find(({ id }) => id === 'frame-tested');
+    assert.isUndefined(frameTested);
+  })
+})
+
+describe('axe.finishRun errors', () => {
+  const windowOpenThrows = `;window.open = () => { throw new Error("No window.open")}`
+  const finishRunThrows = `;axe.finishRun = () => { throw new Error("No finishRun")}`
+  it('throws an error if window.open throws', async () => {
+    await driver.get(`${addr}/index.html`)
+    try {
+      await new AxeBuilder(driver, axeSource + windowOpenThrows).analyze()
+      assert.fail("Should have thrown")
+      } catch (err) {
+        assert.match(err.message, /switchToWindow failed/)
+      }
+  })
+
+  it('throws an error if axe.finishRun throws', async () => {
+    await driver.get(`${addr}/index.html`)
+    try {
+      await new AxeBuilder(driver, axeSource + finishRunThrows).analyze()
+      assert.fail("Should have thrown")
+      } catch (err) {
+        assert.match(err.message, /finishRun failed/)
+      }
+  })
+})
 ```
