@@ -7,44 +7,44 @@ Fixtures for testing integrations of axe-core. All fixtures can be found in the 
 Using the fixtures, the following tests should be applied to the project (code written using a JavaScript Selenium-like framework). For testing axe.run "legacy" code path, any axe-core version prior to 4.3.0 will work.
 
 ```js
-const axeSource = fs.readFileSync('axe-core@4.3.2.js', 'utf8');
-const legacyAxeSource = fs.readFileSync('fixtures/axe-core@legacy.js', 'utf8');
-const axeCrasherSource = fs.readFileSync('fixtures/axe-crasher.js', 'utf8');
+const axeSource = fs.readFileSync("axe-core@4.3.2.js", "utf8");
+const legacyAxeSource = fs.readFileSync("fixtures/axe-core@legacy.js", "utf8");
+const axeCrasherSource = fs.readFileSync("fixtures/axe-crasher.js", "utf8");
 
-describe('analyze', () => {
+describe("analyze", () => {
   // ...
 
-  it('throws if axe errors out on the top window', done => {
+  it("throws if axe errors out on the top window", (done) => {
     driver
       .get(`${addr}/crash.html`)
       .then(() => {
         return new AxeBuilder(driver, axeSource + axeCrasherSource).analyze();
       })
       .then(
-        () => done(new Error('Expect async function to throw')),
+        () => done(new Error("Expect async function to throw")),
         () => done()
       );
   });
 
-  it('throws when injecting a problematic source', done => {
+  it("throws when injecting a problematic source", (done) => {
     driver
       .get(`${addr}/crash.html`)
       .then(() => {
-        return new AxeBuilder(driver, 'throw new Error()').analyze();
+        return new AxeBuilder(driver, "throw new Error()").analyze();
       })
       .then(
-        () => done(new Error('Expect async function to throw')),
+        () => done(new Error("Expect async function to throw")),
         () => done()
       );
   });
 
-  it('throws when a setup fails', done => {
+  it("throws when a setup fails", (done) => {
     const brokenSource = axeSource + `;window.axe.utils = {}`;
     driver
       .get(`${addr}/index.html`)
       .then(() => {
         return new AxeBuilder(driver, brokenSource)
-          .withRules('label')
+          .withRules("label")
           .analyze();
       })
       .then(
@@ -54,104 +54,102 @@ describe('analyze', () => {
   });
 });
 
-describe('frame tests', () => {
-  it('injects into nested iframes', async () => {
+describe("frame tests", () => {
+  it("injects into nested iframes", async () => {
     await driver.get(`${addr}/nested-iframes.html`);
     const { violations } = await new AxeBuilder(driver)
-      .options({ runOnly: 'label' })
+      .options({ runOnly: "label" })
       .analyze();
 
-    assert.equal(violations[0].id, 'label');
+    assert.equal(violations[0].id, "label");
     const nodes = violations[0].nodes;
     assert.lengthOf(nodes, 4);
     assert.deepEqual(nodes[0].target, [
-      '#ifr-foo',
-      '#foo-bar',
-      '#bar-baz',
-      'input'
+      "#ifr-foo",
+      "#foo-bar",
+      "#bar-baz",
+      "input",
     ]);
-    assert.deepEqual(nodes[1].target, ['#ifr-foo', '#foo-baz', 'input']);
-    assert.deepEqual(nodes[2].target, ['#ifr-bar', '#bar-baz', 'input']);
-    assert.deepEqual(nodes[3].target, ['#ifr-baz', 'input']);
+    assert.deepEqual(nodes[1].target, ["#ifr-foo", "#foo-baz", "input"]);
+    assert.deepEqual(nodes[2].target, ["#ifr-bar", "#bar-baz", "input"]);
+    assert.deepEqual(nodes[3].target, ["#ifr-baz", "input"]);
   });
 
-  it('injects into nested frameset', async () => {
+  it("injects into nested frameset", async () => {
     await driver.get(`${addr}/nested-frameset.html`);
     const { violations } = await new AxeBuilder(driver)
-      .options({ runOnly: 'label' })
+      .options({ runOnly: "label" })
       .analyze();
 
-    assert.equal(violations[0].id, 'label');
+    assert.equal(violations[0].id, "label");
     assert.lengthOf(violations[0].nodes, 4);
 
     const nodes = violations[0].nodes;
     assert.deepEqual(nodes[0].target, [
-      '#frm-foo',
-      '#foo-bar',
-      '#bar-baz',
-      'input'
+      "#frm-foo",
+      "#foo-bar",
+      "#bar-baz",
+      "input",
     ]);
-    assert.deepEqual(nodes[1].target, ['#frm-foo', '#foo-baz', 'input']);
-    assert.deepEqual(nodes[2].target, ['#frm-bar', '#bar-baz', 'input']);
-    assert.deepEqual(nodes[3].target, ['#frm-baz', 'input']);
+    assert.deepEqual(nodes[1].target, ["#frm-foo", "#foo-baz", "input"]);
+    assert.deepEqual(nodes[2].target, ["#frm-bar", "#bar-baz", "input"]);
+    assert.deepEqual(nodes[3].target, ["#frm-baz", "input"]);
   });
 
-  it('should work on shadow DOM iframes', async () => {
+  it("should work on shadow DOM iframes", async () => {
     await driver.get(`${addr}/shadow-frames.html`);
     const { violations } = await new AxeBuilder(driver)
-      .options({ runOnly: 'label' })
+      .options({ runOnly: "label" })
       .analyze();
 
-    assert.equal(violations[0].id, 'label');
+    assert.equal(violations[0].id, "label");
     assert.lengthOf(violations[0].nodes, 3);
 
     const nodes = violations[0].nodes;
-    assert.deepEqual(nodes[0].target, ['#light-frame', 'input']);
+    assert.deepEqual(nodes[0].target, ["#light-frame", "input"]);
     assert.deepEqual(nodes[1].target, [
-      ['#shadow-root', '#shadow-frame'],
-      'input'
+      ["#shadow-root", "#shadow-frame"],
+      "input",
     ]);
-    assert.deepEqual(nodes[2].target, ['#slotted-frame', 'input']);
+    assert.deepEqual(nodes[2].target, ["#slotted-frame", "input"]);
   });
 
-  it('reports erroring frames in frame-tested', async () => {
+  it("reports erroring frames in frame-tested", async () => {
     await driver.get(`${addr}/crash-parent.html`);
     const results = await new AxeBuilder(driver, axeSource + axeCrasherSource)
-      .options({ runOnly: ['label', 'frame-tested'] })
+      .options({ runOnly: ["label", "frame-tested"] })
       .analyze();
 
-    assert.equal(results.incomplete[0].id, 'frame-tested');
+    assert.equal(results.incomplete[0].id, "frame-tested");
     assert.lengthOf(results.incomplete[0].nodes, 1);
-    assert.deepEqual(results.incomplete[0].nodes[0].target, [
-      '#ifr-crash'
-    ]);
-    assert.equal(results.violations[0].id, 'label');
+    assert.deepEqual(results.incomplete[0].nodes[0].target, ["#ifr-crash"]);
+    assert.equal(results.violations[0].id, "label");
     assert.lengthOf(results.violations[0].nodes, 2);
     assert.deepEqual(results.violations[0].nodes[0].target, [
-      '#ifr-bar',
-      '#bar-baz',
-      'input'
+      "#ifr-bar",
+      "#bar-baz",
+      "input",
     ]);
     assert.deepEqual(results.violations[0].nodes[1].target, [
-      '#ifr-baz',
-      'input'
+      "#ifr-baz",
+      "input",
     ]);
   });
 });
 
-describe('for versions without axe.runPartial', () => {
-  it('can run', async () => {
+describe("for versions without axe.runPartial", () => {
+  it("can run", async () => {
     await driver.get(`${addr}/nested-iframes.html`);
     const results = await new AxeBuilder(driver, legacyAxeSource)
-      .options({ runOnly: ['label'] })
+      .options({ runOnly: ["label"] })
       .analyze();
 
-    assert.equal(results.violations[0].id, 'label');
+    assert.equal(results.violations[0].id, "label");
     assert.lengthOf(results.violations[0].nodes, 4);
-    assert.equal(results.testEngine.version, '4.0.3');
+    assert.equal(results.testEngine.version, "4.0.3");
   });
 
-  it('throws if the top level errors', done => {
+  it("throws if the top level errors", (done) => {
     driver
       .get(`${addr}/crash.html`)
       .then(() => {
@@ -161,131 +159,137 @@ describe('for versions without axe.runPartial', () => {
         ).analyze();
       })
       .then(
-        () => done(new Error('Expect async function to throw')),
+        () => done(new Error("Expect async function to throw")),
         () => done()
       );
   });
 
-  it('reports frame-tested', async () => {
+  it("reports frame-tested", async () => {
     await driver.get(`${addr}/crash-parent.html`);
-    const results = await new AxeBuilder(driver, legacyAxeSource + axeCrasherSource)
-      .options({ runOnly: ['label', 'frame-tested'] })
+    const results = await new AxeBuilder(
+      driver,
+      legacyAxeSource + axeCrasherSource
+    )
+      .options({ runOnly: ["label", "frame-tested"] })
       .analyze();
 
-    assert.equal(results.incomplete[0].id, 'frame-tested');
+    assert.equal(results.incomplete[0].id, "frame-tested");
     assert.lengthOf(results.incomplete[0].nodes, 1);
-    assert.equal(results.violations[0].id, 'label');
+    assert.equal(results.violations[0].id, "label");
     assert.lengthOf(results.violations[0].nodes, 2);
   });
 });
 
-describe('with a custom ruleset', () => {
+describe("with a custom ruleset", () => {
   // These test should only be added to integrations that support .configure()
   // Not all integrations do. Do NOT add .configure() support to integrations
   // that do not have it.
 
-  const dylangConfig = require('./fixtures/dylang-config.json');
+  const dylangConfig = require("./fixtures/dylang-config.json");
 
-  it('should find violations with customized helpUrl', async function () {
+  it("should find violations with customized helpUrl", async function () {
     await page.goto(`${addr}/index.html`);
     const { violations, passes } = await new AxePuppeteer(page)
-      .configure(dylangConfig).analyze();
+      .configure(dylangConfig)
+      .analyze();
 
     assert.lengthOf(passes, 0);
     assert.lengthOf(violations, 1);
-    assert.equal(violations[0].id, 'dylang');
+    assert.equal(violations[0].id, "dylang");
     assert.lengthOf(violations[0].nodes, 1);
   });
 
-  it('configures in nested frames', async function () {
+  it("configures in nested frames", async function () {
     await page.goto(`${addr}/nested-iframes.html`);
     const { violations } = await new AxePuppeteer(page)
       .configure(dylangConfig)
       .analyze();
 
     assert.lengthOf(violations, 1);
-    assert.equal(violations[0].id, 'dylang');
+    assert.equal(violations[0].id, "dylang");
     assert.lengthOf(violations[0].nodes, 8);
   });
 
-  it('works without runPartial', async () => {
-    const axePath = require.resolve('./fixtures/axe-core@legacy.js');
-    const legacyAxeSource = fs.readFileSync(axePath, 'utf8');
+  it("works without runPartial", async () => {
+    const axePath = require.resolve("./fixtures/axe-core@legacy.js");
+    const legacyAxeSource = fs.readFileSync(axePath, "utf8");
     await page.goto(`${addr}/external/nested-iframes.html`);
     const { violations } = await new AxePuppeteer(page, legacyAxeSource)
       .configure(dylangConfig)
       .analyze();
 
     assert.lengthOf(violations, 1);
-    assert.equal(violations[0].id, 'dylang');
+    assert.equal(violations[0].id, "dylang");
     assert.lengthOf(violations[0].nodes, 8);
   });
 
-  describe('with include and exclude', () => {
+  describe("with include and exclude", () => {
     // helper function that returns all of the pass node targets within an array
     // so we can easily check if the node was included or excluded during analysis
     const flatPassesTargets = (results) => {
-        return results.passes.reduce((acc, pass) => {
-            return acc.concat(pass.nodes);
-          }, [])
-          .reduce((acc, node) => {
-            return acc.concat(node.target);
-          }, []);
-      };
+      return results.passes
+        .reduce((acc, pass) => {
+          return acc.concat(pass.nodes);
+        }, [])
+        .reduce((acc, node) => {
+          return acc.concat(node.target);
+        }, []);
+    };
 
-  it('with only include', async function () {
-    await page.goto(`${addr}/context-include-exclude.html`);
-    const results = await new AxePuppeteer(page)
-      .include('.include')
-      .include('.include2')
-      .analyze();
+    it("with only include", async function () {
+      await page.goto(`${addr}/context-include-exclude.html`);
+      const results = await new AxePuppeteer(page)
+        .include(".include")
+        .include(".include2")
+        .analyze();
 
-    assert.isTrue(flatPassesTargets(results).includes('.include'))
-    assert.isTrue(flatPassesTargets(results).includes('.include2'))
+      assert.isTrue(flatPassesTargets(results).includes(".include"));
+      assert.isTrue(flatPassesTargets(results).includes(".include2"));
+    });
+
+    it("with only exclude", async function () {
+      await page.goto(`${addr}/context-include-exclude.html`);
+      const results = await new AxePuppeteer(page)
+        .exclude(".exclude")
+        .exclude(".exclude2")
+        .analyze();
+
+      assert.isFalse(flatPassesTargets(results).includes(".exclude"));
+      assert.isFalse(flatPassesTargets(results).includes(".exclude2"));
+    });
+
+    it("with include and exclude", async function () {
+      await page.goto(`${addr}/context-include-exclude.html`);
+      const results = await new AxePuppeteer(page)
+        .include(".include")
+        .include(".include2")
+        .exclude(".exclude")
+        .exclude(".exclude2")
+        .analyze();
+
+      assert.isTrue(flatPassesTargets(results).includes(".include"));
+      assert.isTrue(flatPassesTargets(results).includes(".include2"));
+      assert.isFalse(flatPassesTargets(results).includes(".exclude"));
+      assert.isFalse(flatPassesTargets(results).includes(".exclude2"));
+    });
+
+    it("with include and exclude iframes", async function () {
+      await page.goto(`${addr}/context-include-exclude.html`);
+      const results = await new AxePuppeteer(page)
+        .include(["#ifr-inc-excl", "html"])
+        .exclude(["#ifr-inc-excl", "#foo-bar"])
+        .include(["#ifr-inc-excl", "#foo-baz", "html"])
+        .exclude(["#ifr-inc-excl", "#foo-baz", "input"])
+        .analyze();
+
+      const labelResult = results.violations.find(
+        (r: Axe.Result) => r.id === "label"
+      );
+
+      assert.isFalse(flatPassesTargets(results).includes("#foo-bar"));
+      assert.isFalse(flatPassesTargets(results).includes("input"));
+      expect(labelResult).to.be.undefined;
+    });
   });
-
-  it('with only exclude', async function () {
-    await page.goto(`${addr}/context-include-exclude.html`);
-    const results = await new AxePuppeteer(page)
-      .exclude('.exclude')
-      .exclude('.exclude2')
-      .analyze();
-
-    assert.isFalse(flatPassesTargets(results).includes('.exclude'))
-    assert.isFalse(flatPassesTargets(results).includes('.exclude2'))
-  });
-
-  it('with include and exclude', async function () {
-    await page.goto(`${addr}/context-include-exclude.html`);
-    const results = await new AxePuppeteer(page)
-      .include('.include')
-      .include('.include2')
-      .exclude('.exclude')
-      .exclude('.exclude2')
-      .analyze();
-
-    assert.isTrue(flatPassesTargets(results).includes('.include'))
-    assert.isTrue(flatPassesTargets(results).includes('.include2'))
-    assert.isFalse(flatPassesTargets(results).includes('.exclude'))
-    assert.isFalse(flatPassesTargets(results).includes('.exclude2'))
-  });
-
-   it('with include and exclude iframes', async function () {
-    await page.goto(`${addr}/context-include-exclude.html`);
-    const results = await new AxePuppeteer(page)
-      .include(['#ifr-inc-excl', 'html'])
-      .exclude(['#ifr-inc-excl', '#foo-bar'])
-      .include(['#ifr-inc-excl', '#foo-baz', 'html'])
-      .exclude(['#ifr-inc-excl', '#foo-baz', 'input'])
-      .analyze();
-
-    const labelResult = results.violations.find(
-      (r: Axe.Result) => r.id === 'label'
-    );
-
-    assert.isFalse(flatPassesTargets(results).includes('#foo-bar'));
-    assert.isFalse(flatPassesTargets(results).includes('input'));
-    expect(labelResult).to.be.undefined;
-  });
-})
+});
 ```
