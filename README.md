@@ -1,6 +1,6 @@
 # axe-test-fixtures
 
-Fixtures for testing integrations of axe-core. All fixtures can be found in the `/fixture` directory. 
+Fixtures for testing integrations of axe-core. All fixtures can be found in the `/fixture` directory.
 
 ## Tests
 
@@ -219,6 +219,73 @@ describe('with a custom ruleset', () => {
     assert.lengthOf(violations, 1);
     assert.equal(violations[0].id, 'dylang');
     assert.lengthOf(violations[0].nodes, 8);
+  });
+
+  describe('with include and exclude', () => {
+    // helper function that returns all of the pass node targets within an array
+    // so we can easily check if the node was included or excluded during analysis
+    const flatPassesTargets = (results) => {
+        return results.passes.reduce((acc, pass) => {
+            return acc.concat(pass.nodes);
+          }, [])
+          .reduce((acc, node) => {
+            return acc.concat(node.target);
+          }, []);
+      };
+
+  it('with only include', async function () {
+    await page.goto(`${addr}/context-include-exclude.html`);
+    const results = await new AxePuppeteer(page)
+      .include('.include')
+      .include('.include2')
+      .analyze();
+
+    assert.isTrue(flatPassesTargets(results).includes('.include'))
+    assert.isTrue(flatPassesTargets(results).includes('.include2'))
+  });
+
+  it('with only exclude', async function () {
+    await page.goto(`${addr}/context-include-exclude.html`);
+    const results = await new AxePuppeteer(page)
+      .exclude('.exclude')
+      .exclude('.exclude2')
+      .analyze();
+
+    assert.isFalse(flatPassesTargets(results).includes('.exclude'))
+    assert.isFalse(flatPassesTargets(results).includes('.exclude2'))
+  });
+
+  it('with include and exclude', async function () {
+    await page.goto(`${addr}/context-include-exclude.html`);
+    const results = await new AxePuppeteer(page)
+      .include('.include')
+      .include('.include2')
+      .exclude('.exclude')
+      .exclude('.exclude2')
+      .analyze();
+
+    assert.isTrue(flatPassesTargets(results).includes('.include'))
+    assert.isTrue(flatPassesTargets(results).includes('.include2'))
+    assert.isFalse(flatPassesTargets(results).includes('.exclude'))
+    assert.isFalse(flatPassesTargets(results).includes('.exclude2'))
+  });
+
+   it('with include and exclude iframes', async function () {
+    await page.goto(`${addr}/context-include-exclude.html`);
+    const results = await new AxePuppeteer(page)
+      .include(['#ifr-inc-excl', 'html'])
+      .exclude(['#ifr-inc-excl', '#foo-bar'])
+      .include(['#ifr-inc-excl', '#foo-baz', 'html'])
+      .exclude(['#ifr-inc-excl', '#foo-baz', 'input'])
+      .analyze();
+
+    const labelResult = results.violations.find(
+      (r: Axe.Result) => r.id === 'label'
+    );
+
+    assert.isFalse(flatPassesTargets(results).includes('#foo-bar'));
+    assert.isFalse(flatPassesTargets(results).includes('input'));
+    expect(labelResult).to.be.undefined;
   });
 })
 ```
