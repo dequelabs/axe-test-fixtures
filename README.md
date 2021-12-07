@@ -338,6 +338,26 @@ describe('with a custom ruleset', () => {
       assert.isFalse(flatPassesTargets(results).includes('input'));
       expect(labelResult).to.be.undefined;
     });
+
+    it('with include and exclude iframes', async function () {
+      await page.goto(`${addr}/context-include-exclude.html`);
+      const results = await new AxePuppeteer(page)
+          .include(['#ifr-inc-excl', '#foo-baz', 'html'])
+          .include(['#ifr-inc-excl', '#foo-baz', 'input'])
+          .analyze();
+
+        console.log(flatPassesTargets(results));
+
+        const labelResult = results.violations.find(
+          (r: Axe.Result) => r.id === 'label'
+        );
+
+        assert.isTrue(flatPassesTargets(results).includes('#ifr-inc-excl'));
+        assert.isTrue(flatPassesTargets(results).includes('#foo-baz'));
+        assert.isTrue(flatPassesTargets(results).includes('input'));
+        assert.isFalse(flatPassesTargets(results).includes('#foo-bar'));
+        expect(labelResult).not.to.be.undefined;
+    });
   });
 });
 
