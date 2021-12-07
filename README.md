@@ -344,6 +344,8 @@ describe('with a custom ruleset', () => {
       const results = await new AxePuppeteer(page)
           .include(['#ifr-inc-excl', '#foo-baz', 'html'])
           .include(['#ifr-inc-excl', '#foo-baz', 'input'])
+          // does not exist
+          .include(['#hazaar', 'html'])
           .analyze();
 
         console.log(flatPassesTargets(results));
@@ -356,6 +358,8 @@ describe('with a custom ruleset', () => {
         assert.isTrue(flatPassesTargets(results).includes('#foo-baz'));
         assert.isTrue(flatPassesTargets(results).includes('input'));
         assert.isFalse(flatPassesTargets(results).includes('#foo-bar'));
+        // does not exist
+        assert.isFalse(flatPassesTargets(results).includes('#hazaar'));
         expect(labelResult).not.to.be.undefined;
     });
   });
