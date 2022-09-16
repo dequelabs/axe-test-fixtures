@@ -300,4 +300,44 @@ describe('setLegacyMode', () => {
     assert.isUndefined(frameTested);
   })
 })
+
+describe('allowedOrigins', () => {
+  function async getAllowedOrigins() {
+    return await driver.evaluate('axe._audit.allowedOrigins')
+  }
+
+  it('should not set when running runPartial and not legacy mode', async () => {
+    await page.goto(`${addr}/index.html`);
+    await new AxePuppeteer(page)
+      .analyze()
+    const allowedOrigins = await getAllowedOrigins()
+    assert.notEqual(allowedOrigins[0], '*')
+  })
+
+  it('should not set when running runPartial and legacy mode', async () => {
+    await page.goto(`${addr}/index.html`);
+    await new AxePuppeteer(page)
+      .setLegacyMode(true)
+      .analyze()
+    const allowedOrigins = await getAllowedOrigins()
+    assert.notEqual(allowedOrigins[0], '*')
+  })
+
+  it('should not set when running legacy source and legacy mode', async () => {
+    await page.goto(`${addr}/index.html`);
+    await new AxePuppeteer(page, legacyAxeSource)
+      .setLegacyMode(true)
+      .analyze()
+    const allowedOrigins = await getAllowedOrigins()
+    assert.notEqual(allowedOrigins[0], '*')
+  })
+
+  it('should set when running legacy source and not legacy mode', async () => {
+    await page.goto(`${addr}/index.html`);
+    await new AxePuppeteer(page, legacyAxeSource)
+      .analyze()
+    const allowedOrigins = await getAllowedOrigins()
+    assert.equal(allowedOrigins[0], '*')
+  })
+})
 ```
