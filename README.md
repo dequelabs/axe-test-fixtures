@@ -437,7 +437,7 @@ describe('allowedOrigins', () => {
     await new AxePuppeteer(page)
       .analyze()
     const allowedOrigins = await getAllowedOrigins()
-    assert.equal(allowedOrigins[0], addr)
+    assert.deepEqual(allowedOrigins, [addr])
   })
 
   it('should not set when running runPartial and legacy mode', async () => {
@@ -446,7 +446,7 @@ describe('allowedOrigins', () => {
       .setLegacyMode(true)
       .analyze()
     const allowedOrigins = await getAllowedOrigins()
-    assert.equal(allowedOrigins[0], addr)
+    assert.deepEqual(allowedOrigins, [addr])
   })
 
   it('should not set when running legacy source and legacy mode', async () => {
@@ -455,7 +455,7 @@ describe('allowedOrigins', () => {
       .setLegacyMode(true)
       .analyze()
     const allowedOrigins = await getAllowedOrigins()
-    assert.equal(allowedOrigins[0], addr)
+    assert.deepEqual(allowedOrigins, [addr])
   })
 
   it('should set when running legacy source and not legacy mode', async () => {
@@ -463,7 +463,7 @@ describe('allowedOrigins', () => {
     await new AxePuppeteer(page, axeSource + axeForceLegacy)
       .analyze()
     const allowedOrigins = await getAllowedOrigins()
-    assert.equal(allowedOrigins[0], '*')
+    assert.deepEqual(allowedOrigins, ['*'])
   })
 })
 ```
