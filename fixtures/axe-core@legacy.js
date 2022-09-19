@@ -1,4 +1,4 @@
-/*! axe v4.2.0
+/*! axe v4.2.3
  * Copyright (c) 2021 Deque Systems, Inc.
  *
  * Your use of this Source Code Form is subject to the terms of the Mozilla Public
@@ -27,7 +27,7 @@
     return _typeof(obj);
   }
   var axe = axe || {};
-  axe.version = '4.2.0';
+  axe.version = '4.2.3';
   if (typeof define === 'function' && define.amd) {
     define('axe-core', [], function() {
       return axe;
@@ -54,6 +54,7 @@
   SupportError.prototype = Object.create(Error.prototype);
   SupportError.prototype.constructor = SupportError;
   'use strict';
+  var _excluded = [ 'variant' ], _excluded2 = [ 'matches' ], _excluded3 = [ 'chromium' ], _excluded4 = [ 'noImplicit' ], _excluded5 = [ 'noPresentational' ];
   function _objectWithoutProperties(source, excluded) {
     if (source == null) {
       return {};
@@ -162,7 +163,7 @@
       return true;
     }
     try {
-      Date.prototype.toString.call(Reflect.construct(Date, [], function() {}));
+      Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function() {}));
       return true;
     } catch (e) {
       return false;
@@ -181,7 +182,7 @@
     throw new TypeError('Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.');
   }
   function _iterableToArray(iter) {
-    if (typeof Symbol !== 'undefined' && Symbol.iterator in Object(iter)) {
+    if (typeof Symbol !== 'undefined' && iter[Symbol.iterator] != null || iter['@@iterator'] != null) {
       return Array.from(iter);
     }
   }
@@ -197,15 +198,16 @@
     throw new TypeError('Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.');
   }
   function _iterableToArrayLimit(arr, i) {
-    if (typeof Symbol === 'undefined' || !(Symbol.iterator in Object(arr))) {
+    var _i = arr == null ? null : typeof Symbol !== 'undefined' && arr[Symbol.iterator] || arr['@@iterator'];
+    if (_i == null) {
       return;
     }
     var _arr = [];
     var _n = true;
     var _d = false;
-    var _e = undefined;
+    var _s, _e;
     try {
-      for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
+      for (_i = _i.call(arr); !(_n = (_s = _i.next()).done); _n = true) {
         _arr.push(_s.value);
         if (i && _arr.length === i) {
           break;
@@ -272,8 +274,8 @@
     return Constructor;
   }
   function _createForOfIteratorHelper(o, allowArrayLike) {
-    var it;
-    if (typeof Symbol === 'undefined' || o[Symbol.iterator] == null) {
+    var it = typeof Symbol !== 'undefined' && o[Symbol.iterator] || o['@@iterator'];
+    if (!it) {
       if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === 'number') {
         if (it) {
           o = it;
@@ -304,7 +306,7 @@
     var normalCompletion = true, didErr = false, err;
     return {
       s: function s() {
-        it = o[Symbol.iterator]();
+        it = it.call(o);
       },
       n: function n() {
         var step = it.next();
@@ -400,7 +402,7 @@
         });
       }
     };
-    var __exportStar = function __exportStar(target, module) {
+    var __exportStar = function __exportStar(target, module, desc) {
       __markAsModule(target);
       if (_typeof(module) === 'object' || typeof module === 'function') {
         var _iterator = _createForOfIteratorHelper(__getOwnPropNames(module)), _step;
@@ -412,7 +414,7 @@
                 get: function get() {
                   return module[key];
                 },
-                enumerable: __getOwnPropDesc(module, key).enumerable
+                enumerable: !(desc = __getOwnPropDesc(module, key)) || desc.enumerable
               });
             }
           };
@@ -2767,15 +2769,13 @@
     });
     var require_next_tick = __commonJS(function(exports, module) {
       'use strict';
-      var callable;
-      var byObserver;
-      callable = function callable(fn) {
+      var ensureCallable = function ensureCallable(fn) {
         if (typeof fn !== 'function') {
           throw new TypeError(fn + ' is not a function');
         }
         return fn;
       };
-      byObserver = function byObserver(Observer) {
+      var byObserver = function byObserver(Observer) {
         var node = document.createTextNode(''), queue4, currentQueue, i = 0;
         new Observer(function() {
           var callback;
@@ -2807,7 +2807,7 @@
           characterData: true
         });
         return function(fn) {
-          callable(fn);
+          ensureCallable(fn);
           if (queue4) {
             if (typeof queue4 === 'function') {
               queue4 = [ queue4, fn ];
@@ -2824,6 +2824,11 @@
         if ((typeof process === 'undefined' ? 'undefined' : _typeof(process)) === 'object' && process && typeof process.nextTick === 'function') {
           return process.nextTick;
         }
+        if (typeof queueMicrotask === 'function') {
+          return function(cb) {
+            queueMicrotask(ensureCallable(cb));
+          };
+        }
         if ((typeof document === 'undefined' ? 'undefined' : _typeof(document)) === 'object' && document) {
           if (typeof MutationObserver === 'function') {
             return byObserver(MutationObserver);
@@ -2834,12 +2839,12 @@
         }
         if (typeof setImmediate === 'function') {
           return function(cb) {
-            setImmediate(callable(cb));
+            setImmediate(ensureCallable(cb));
           };
         }
         if (typeof setTimeout === 'function' || (typeof setTimeout === 'undefined' ? 'undefined' : _typeof(setTimeout)) === 'object') {
           return function(cb) {
-            setTimeout(callable(cb), 0);
+            setTimeout(ensureCallable(cb), 0);
           };
         }
         return null;
@@ -4571,7 +4576,7 @@
               return undefined2;
             }
             var bytes = [], i, o;
-            for (i = 0, o = this.byteOffset + index * this.BYTES_PER_ELEMENT; i < this.BYTES_PER_ELEMENT; i += 1,
+            for (i = 0, o = this.byteOffset + index * this.BYTES_PER_ELEMENT; i < this.BYTES_PER_ELEMENT; i += 1, 
             o += 1) {
               bytes.push(this.buffer._bytes[o]);
             }
@@ -4587,7 +4592,7 @@
               return undefined2;
             }
             var bytes = this._pack(value), i, o;
-            for (i = 0, o = this.byteOffset + index * this.BYTES_PER_ELEMENT; i < this.BYTES_PER_ELEMENT; i += 1,
+            for (i = 0, o = this.byteOffset + index * this.BYTES_PER_ELEMENT; i < this.BYTES_PER_ELEMENT; i += 1, 
             o += 1) {
               this.buffer._bytes[o] = bytes[i];
             }
@@ -4614,7 +4619,7 @@
                   this.buffer._bytes[d] = tmp[i];
                 }
               } else {
-                for (i = 0, s = array.byteOffset, d = byteOffset; i < byteLength; i += 1, s += 1,
+                for (i = 0, s = array.byteOffset, d = byteOffset; i < byteLength; i += 1, s += 1, 
                 d += 1) {
                   this.buffer._bytes[d] = array.buffer._bytes[s];
                 }
@@ -4770,8 +4775,15 @@
           return;
         }
         var hasOwnProperty2 = Object.prototype.hasOwnProperty;
+        var hasDefine = Object.defineProperty && function() {
+          try {
+            return Object.defineProperty({}, 'x', {
+              value: 1
+            }).x === 1;
+          } catch (e) {}
+        }();
         var defineProperty = function defineProperty(object, name, value) {
-          if (Object.defineProperty) {
+          if (hasDefine) {
             Object.defineProperty(object, name, {
               configurable: true,
               writable: true,
@@ -4855,7 +4867,7 @@
         function isObject(x) {
           return Object(x) === x;
         }
-      })(typeof self !== 'undefined' ? self : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : exports);
+      })(typeof globalThis !== 'undefined' ? globalThis : typeof self !== 'undefined' ? self : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : exports);
     });
     var definitions = [ {
       name: 'NA',
@@ -4921,6 +4933,16 @@
         this.parent = void 0;
       }
       _createClass(AbstractVirtualNode, [ {
+        key: 'props',
+        get: function get() {
+          throw new Error('VirtualNode class must have a "props" object consisting of "nodeType" and "nodeName" properties');
+        }
+      }, {
+        key: 'attrNames',
+        get: function get() {
+          throw new Error('VirtualNode class must have an "attrNames" property');
+        }
+      }, {
         key: 'attr',
         value: function attr() {
           throw new Error('VirtualNode class must have an "attr" function');
@@ -4939,16 +4961,6 @@
           }
           var selector = ' ' + className + ' ';
           return (' ' + classAttr + ' ').replace(whitespaceRegex, ' ').indexOf(selector) >= 0;
-        }
-      }, {
-        key: 'props',
-        get: function get() {
-          throw new Error('VirtualNode class must have a "props" object consisting of "nodeType" and "nodeName" properties');
-        }
-      }, {
-        key: 'attrNames',
-        get: function get() {
-          throw new Error('VirtualNode class must have an "attrNames" property');
         }
       } ]);
       return AbstractVirtualNode;
@@ -5066,6 +5078,9 @@
       },
       getShadowSelector: function getShadowSelector() {
         return get_shadow_selector_default;
+      },
+      getStandards: function getStandards() {
+        return _getStandards;
       },
       getStyleSheetFactory: function getStyleSheetFactory() {
         return get_stylesheet_factory_default;
@@ -5278,8 +5293,8 @@
         sendToParent: sendToParent
       };
     }
-    function getReplyHandler(topic) {
-      return channels[topic];
+    function getReplyHandler(channelId) {
+      return channels[channelId];
     }
     function deleteReplyHandler(channelId) {
       delete channels[channelId];
@@ -6218,6 +6233,24 @@
       return xpathToString(xpathArray);
     }
     var get_xpath_default = getXpath;
+    var _cache = {};
+    var cache = {
+      set: function set(key, value) {
+        _cache[key] = value;
+      },
+      get: function get(key) {
+        return _cache[key];
+      },
+      clear: function clear() {
+        _cache = {};
+      }
+    };
+    var cache_default = cache;
+    function getNodeFromTree(vNode, node) {
+      var el = node || vNode;
+      return cache_default.get('nodeMap') ? cache_default.get('nodeMap').get(el) : null;
+    }
+    var get_node_from_tree_default = getNodeFromTree;
     function truncate(str, maxLength) {
       maxLength = maxLength || 300;
       if (str.length > maxLength) {
@@ -6227,28 +6260,44 @@
       return str;
     }
     function getSource2(element) {
+      if (!(element !== null && element !== void 0 && element.outerHTML)) {
+        return '';
+      }
       var source = element.outerHTML;
       if (!source && typeof XMLSerializer === 'function') {
         source = new XMLSerializer().serializeToString(element);
       }
       return truncate(source || '');
     }
-    function DqElement(element, options, spec) {
-      this._fromFrame = !!spec;
-      this.spec = spec || {};
-      if (options && options.absolutePaths) {
+    function DqElement(elm) {
+      var _this$spec$selector, _this$_virtualNode;
+      var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+      var spec = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+      this.spec = spec;
+      if (elm instanceof abstract_virtual_node_default) {
+        this._virtualNode = elm;
+        this._element = elm.actualNode;
+      } else {
+        this._element = elm;
+        this._virtualNode = get_node_from_tree_default(elm);
+      }
+      this.fromFrame = ((_this$spec$selector = this.spec.selector) === null || _this$spec$selector === void 0 ? void 0 : _this$spec$selector.length) > 1;
+      if (options.absolutePaths) {
         this._options = {
           toRoot: true
         };
       }
-      if (axe._audit.noHtml) {
-        this.source = null;
-      } else if (this.spec.source !== void 0) {
-        this.source = this.spec.source;
-      } else {
-        this.source = getSource2(element);
+      this.nodeIndexes = [];
+      if (Array.isArray(this.spec.nodeIndexes)) {
+        this.nodeIndexes = this.spec.nodeIndexes;
+      } else if (typeof ((_this$_virtualNode = this._virtualNode) === null || _this$_virtualNode === void 0 ? void 0 : _this$_virtualNode.nodeIndex) === 'number') {
+        this.nodeIndexes = [ this._virtualNode.nodeIndex ];
       }
-      this._element = element;
+      this.source = null;
+      if (!axe._audit.noHtml) {
+        var _this$spec$source;
+        this.source = (_this$spec$source = this.spec.source) !== null && _this$spec$source !== void 0 ? _this$spec$source : getSource2(this._element);
+      }
     }
     DqElement.prototype = {
       get selector() {
@@ -6263,15 +6312,13 @@
       get element() {
         return this._element;
       },
-      get fromFrame() {
-        return this._fromFrame;
-      },
       toJSON: function toJSON() {
         return {
           selector: this.selector,
           source: this.source,
           xpath: this.xpath,
-          ancestry: this.ancestry
+          ancestry: this.ancestry,
+          nodeIndexes: this.nodeIndexes
         };
       }
     };
@@ -6279,7 +6326,8 @@
       var spec = _extends({}, node, {
         selector: [].concat(_toConsumableArray(frame.selector), _toConsumableArray(node.selector)),
         ancestry: [].concat(_toConsumableArray(frame.ancestry), _toConsumableArray(node.ancestry)),
-        xpath: [].concat(_toConsumableArray(frame.xpath), _toConsumableArray(node.xpath))
+        xpath: [].concat(_toConsumableArray(frame.xpath), _toConsumableArray(node.xpath)),
+        nodeIndexes: [].concat(_toConsumableArray(frame.nodeIndexes), _toConsumableArray(node.nodeIndexes))
       });
       return new DqElement(frame.element, options, spec);
     };
@@ -6729,19 +6777,6 @@
       return result.concat(object.any || []).concat(object.all || []).concat(object.none || []);
     }
     var get_all_checks_default = getAllChecks;
-    function nodeSorter(nodeA, nodeB) {
-      nodeA = nodeA.actualNode || nodeA;
-      nodeB = nodeB.actualNode || nodeB;
-      if (nodeA === nodeB) {
-        return 0;
-      }
-      if (nodeA.compareDocumentPosition(nodeB) & 4) {
-        return -1;
-      } else {
-        return 1;
-      }
-    }
-    var node_sorter_default = nodeSorter;
     function findBy(array, key, value) {
       if (Array.isArray(array)) {
         return array.find(function(obj) {
@@ -6765,17 +6800,13 @@
       var firstFromFrame = to[0].node;
       for (var _i2 = 0; _i2 < target.length; _i2++) {
         var node = target[_i2].node;
-        var sorterResult = node_sorter_default({
-          actualNode: node.element
-        }, {
-          actualNode: firstFromFrame.element
-        });
-        if (sorterResult > 0 || sorterResult === 0 && firstFromFrame.selector.length < node.selector.length) {
-          target.splice.apply(target, [ _i2, 0 ].concat(to));
+        var resultSort = nodeIndexSort(node.nodeIndexes, firstFromFrame.nodeIndexes);
+        if (resultSort > 0 || resultSort === 0 && firstFromFrame.selector.length < node.selector.length) {
+          target.splice.apply(target, [ _i2, 0 ].concat(_toConsumableArray(to)));
           return;
         }
       }
-      target.push.apply(target, to);
+      target.push.apply(target, _toConsumableArray(to));
     }
     function normalizeResult(result) {
       if (!result || !result.results) {
@@ -6817,21 +6848,33 @@
           }
         });
       });
-      if (frameResults.length > 1 && window && window.Node) {
-        mergedResult.forEach(function(result) {
-          if (result.nodes) {
-            result.nodes.sort(function(a, b) {
-              var aNode = a.node.element;
-              var bNode = b.node.element;
-              if (aNode !== bNode && (a.node._fromFrame || b.node._fromFrame)) {
-                return node_sorter_default(aNode, bNode);
-              }
-              return 0;
-            });
-          }
-        });
-      }
+      mergedResult.forEach(function(result) {
+        if (result.nodes) {
+          result.nodes.sort(function(nodeA, nodeB) {
+            return nodeIndexSort(nodeA.node.nodeIndexes, nodeB.node.nodeIndexes);
+          });
+        }
+      });
       return mergedResult;
+    }
+    function nodeIndexSort() {
+      var nodeIndexesA = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
+      var nodeIndexesB = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
+      var length = Math.max(nodeIndexesA === null || nodeIndexesA === void 0 ? void 0 : nodeIndexesA.length, nodeIndexesB === null || nodeIndexesB === void 0 ? void 0 : nodeIndexesB.length);
+      for (var _i3 = 0; _i3 < length; _i3++) {
+        var indexA = nodeIndexesA === null || nodeIndexesA === void 0 ? void 0 : nodeIndexesA[_i3];
+        var indexB = nodeIndexesB === null || nodeIndexesB === void 0 ? void 0 : nodeIndexesB[_i3];
+        if (typeof indexA !== 'number' || isNaN(indexA)) {
+          return _i3 === 0 ? 1 : -1;
+        }
+        if (typeof indexB !== 'number' || isNaN(indexB)) {
+          return _i3 === 0 ? -1 : 1;
+        }
+        if (indexA !== indexB) {
+          return indexA - indexB;
+        }
+      }
+      return 0;
     }
     var merge_results_default = mergeResults;
     function collectResultsFromFrames(parentContent, options, command, parameter, resolve, reject) {
@@ -6916,8 +6959,8 @@
         if (!source || _typeof(source) !== 'object' || Array.isArray(source)) {
           return;
         }
-        for (var _i3 = 0, _Object$keys = Object.keys(source); _i3 < _Object$keys.length; _i3++) {
-          var key = _Object$keys[_i3];
+        for (var _i4 = 0, _Object$keys = Object.keys(source); _i4 < _Object$keys.length; _i4++) {
+          var key = _Object$keys[_i4];
           if (!target.hasOwnProperty(key) || _typeof(source[key]) !== 'object' || Array.isArray(target[key])) {
             target[key] = source[key];
           } else {
@@ -7301,7 +7344,10 @@
       if (screenReader && el.getAttribute('aria-hidden') === 'true') {
         return false;
       }
-      if (!screenReader && (isClipped(style) || style.getPropertyValue('opacity') === '0' || get_scroll_default(el) && parseInt(style.getPropertyValue('height')) === 0)) {
+      var elHeight = parseInt(style.getPropertyValue('height'));
+      var scrollableWithZeroHeight = get_scroll_default(el) && elHeight === 0;
+      var posAbsoluteOverflowHiddenAndSmall = style.getPropertyValue('position') === 'absolute' && elHeight < 2 && style.getPropertyValue('overflow') === 'hidden';
+      if (!screenReader && (isClipped(style) || style.getPropertyValue('opacity') === '0' || scrollableWithZeroHeight || posAbsoluteOverflowHiddenAndSmall)) {
         return false;
       }
       if (!recursed && (style.getPropertyValue('visibility') === 'hidden' || !screenReader && is_offscreen_default(el))) {
@@ -7414,14 +7460,14 @@
       return 3;
     }
     function visuallySort(a, b) {
-      for (var _i4 = 0; _i4 < a._stackingOrder.length; _i4++) {
-        if (typeof b._stackingOrder[_i4] === 'undefined') {
+      for (var _i5 = 0; _i5 < a._stackingOrder.length; _i5++) {
+        if (typeof b._stackingOrder[_i5] === 'undefined') {
           return -1;
         }
-        if (b._stackingOrder[_i4] > a._stackingOrder[_i4]) {
+        if (b._stackingOrder[_i5] > a._stackingOrder[_i5]) {
           return 1;
         }
-        if (b._stackingOrder[_i4] < a._stackingOrder[_i4]) {
+        if (b._stackingOrder[_i5] < a._stackingOrder[_i5]) {
           return -1;
         }
       }
@@ -7590,19 +7636,6 @@
       }
       return stack;
     }
-    var _cache = {};
-    var cache = {
-      set: function set(key, value) {
-        _cache[key] = value;
-      },
-      get: function get(key) {
-        return _cache[key];
-      },
-      clear: function clear() {
-        _cache = {};
-      }
-    };
-    var cache_default = cache;
     function getElementStack(node) {
       if (!cache_default.get('gridCreated')) {
         createGrid();
@@ -7659,8 +7692,8 @@
           if (outsideRectBounds) {
             return;
           }
-          for (var _i5 = 0; _i5 < rects.length; _i5++) {
-            var rect = rects[_i5];
+          for (var _i6 = 0; _i6 < rects.length; _i6++) {
+            var rect = rects[_i6];
             if (rect.width >= 1 && rect.height >= 1) {
               clientRects.push(rect);
             }
@@ -7994,8 +8027,8 @@
       var stacks = points.map(function(point) {
         return Array.from(document.elementsFromPoint(point.x, point.y));
       });
-      var _loop3 = function _loop3(_i6) {
-        var modalElement = stacks[_i6].find(function(elm) {
+      var _loop3 = function _loop3(_i7) {
+        var modalElement = stacks[_i7].find(function(elm) {
           var style = window.getComputedStyle(elm);
           return parseInt(style.width, 10) >= percentWidth && parseInt(style.height, 10) >= percentHeight && style.getPropertyValue('pointer-events') !== 'none' && (style.position === 'absolute' || style.position === 'fixed');
         });
@@ -8008,8 +8041,8 @@
           };
         }
       };
-      for (var _i6 = 0; _i6 < stacks.length; _i6++) {
-        var _ret = _loop3(_i6);
+      for (var _i7 = 0; _i7 < stacks.length; _i7++) {
+        var _ret = _loop3(_i7);
         if (_typeof(_ret) === 'object') {
           return _ret.v;
         }
@@ -8483,7 +8516,7 @@
       },
       listitem: {
         type: 'structure',
-        requiredContext: [ 'list' ],
+        requiredContext: [ 'list', 'group' ],
         allowedAttrs: [ 'aria-level', 'aria-posinset', 'aria-setsize', 'aria-expanded' ],
         superclassRole: [ 'section' ],
         nameFromContent: true
@@ -8629,7 +8662,7 @@
         type: 'structure',
         requiredContext: [ 'grid', 'rowgroup', 'table', 'treegrid' ],
         requiredOwned: [ 'cell', 'columnheader', 'gridcell', 'rowheader' ],
-        allowedAttrs: [ 'aria-colindex', 'aria-level', 'aria-rowindex', 'aria-selected', 'aria-activedescendant', 'aria-expanded' ],
+        allowedAttrs: [ 'aria-colindex', 'aria-level', 'aria-rowindex', 'aria-selected', 'aria-activedescendant', 'aria-expanded', 'aria-posinset', 'aria-setsize' ],
         superclassRole: [ 'group', 'widget' ],
         nameFromContent: true
       },
@@ -9105,7 +9138,8 @@
             contentTypes: [ 'embedded', 'phrasing', 'flow' ]
           }
         },
-        allowedRoles: [ 'application' ]
+        allowedRoles: [ 'application' ],
+        chromiumRole: 'Audio'
       },
       b: {
         contentTypes: [ 'phrasing', 'flow' ],
@@ -9144,7 +9178,8 @@
       },
       canvas: {
         allowedRoles: true,
-        contentTypes: [ 'embedded', 'phrasing', 'flow' ]
+        contentTypes: [ 'embedded', 'phrasing', 'flow' ],
+        chromiumRole: 'Canvas'
       },
       caption: {
         allowedRoles: false
@@ -9202,7 +9237,8 @@
       },
       dl: {
         contentTypes: [ 'flow' ],
-        allowedRoles: [ 'group', 'list', 'presentation', 'none' ]
+        allowedRoles: [ 'group', 'list', 'presentation', 'none' ],
+        chromiumRole: 'DescriptionList'
       },
       dt: {
         allowedRoles: [ 'listitem' ]
@@ -9213,7 +9249,8 @@
       },
       embed: {
         contentTypes: [ 'interactive', 'embedded', 'phrasing', 'flow' ],
-        allowedRoles: [ 'application', 'document', 'img', 'presentation', 'none' ]
+        allowedRoles: [ 'application', 'document', 'img', 'presentation', 'none' ],
+        chromiumRole: 'EmbeddedObject'
       },
       fieldset: {
         contentTypes: [ 'flow' ],
@@ -9313,7 +9350,8 @@
       },
       iframe: {
         contentTypes: [ 'interactive', 'embedded', 'phrasing', 'flow' ],
-        allowedRoles: [ 'application', 'document', 'img', 'none', 'presentation' ]
+        allowedRoles: [ 'application', 'document', 'img', 'none', 'presentation' ],
+        chromiumRole: 'Iframe'
       },
       img: {
         variant: {
@@ -9451,7 +9489,8 @@
       },
       label: {
         contentTypes: [ 'interactive', 'phrasing', 'flow' ],
-        allowedRoles: false
+        allowedRoles: false,
+        chromiumRole: 'Label'
       },
       legend: {
         allowedRoles: false
@@ -9502,7 +9541,8 @@
       },
       meter: {
         contentTypes: [ 'phrasing', 'flow' ],
-        allowedRoles: false
+        allowedRoles: false,
+        chromiumRole: 'progressbar'
       },
       nav: {
         contentTypes: [ 'sectioning', 'flow' ],
@@ -9524,7 +9564,8 @@
             contentTypes: [ 'embedded', 'phrasing', 'flow' ]
           }
         },
-        allowedRoles: [ 'application', 'document', 'img' ]
+        allowedRoles: [ 'application', 'document', 'img' ],
+        chromiumRole: 'PluginObject'
       },
       ol: {
         contentTypes: [ 'flow' ],
@@ -9554,7 +9595,7 @@
         noAriaAttrs: true
       },
       picture: {
-        contentTypes: [ 'embedded', 'phrasing', 'flow' ],
+        contentTypes: [ 'phrasing', 'flow' ],
         allowedRoles: false,
         noAriaAttrs: true
       },
@@ -9653,6 +9694,7 @@
       svg: {
         contentTypes: [ 'embedded', 'phrasing', 'flow' ],
         allowedRoles: [ 'application', 'document', 'img' ],
+        chromiumRole: 'SVGRoot',
         namingMethods: [ 'svgTitleText' ]
       },
       sub: {
@@ -9738,7 +9780,8 @@
             contentTypes: [ 'embedded', 'phrasing', 'flow' ]
           }
         },
-        allowedRoles: [ 'application' ]
+        allowedRoles: [ 'application' ],
+        chromiumRole: 'video'
       },
       wbr: {
         contentTypes: [ 'phrasing', 'flow' ],
@@ -10274,6 +10317,7 @@
     }
     var visually_overlaps_default = visuallyOverlaps;
     var isXHTMLGlobal;
+    var nodeIndex = 0;
     var VirtualNode = function(_abstract_virtual_nod) {
       _inherits(VirtualNode, _abstract_virtual_nod);
       var _super = _createSuper(VirtualNode);
@@ -10285,6 +10329,10 @@
         _this.children = [];
         _this.actualNode = node;
         _this.parent = parent;
+        if (!parent) {
+          nodeIndex = 0;
+        }
+        _this.nodeIndex = nodeIndex++;
         _this._isHidden = null;
         _this._cache = {};
         if (typeof isXHTMLGlobal === 'undefined') {
@@ -10305,6 +10353,20 @@
         return _this;
       }
       _createClass(VirtualNode, [ {
+        key: 'props',
+        get: function get() {
+          var _this$actualNode = this.actualNode, nodeType = _this$actualNode.nodeType, nodeName2 = _this$actualNode.nodeName, id = _this$actualNode.id, multiple = _this$actualNode.multiple, nodeValue = _this$actualNode.nodeValue, value = _this$actualNode.value;
+          return {
+            nodeType: nodeType,
+            nodeName: this._isXHTML ? nodeName2 : nodeName2.toLowerCase(),
+            id: id,
+            type: this._type,
+            multiple: multiple,
+            nodeValue: nodeValue,
+            value: value
+          };
+        }
+      }, {
         key: 'attr',
         value: function attr(attrName) {
           if (typeof this.actualNode.getAttribute !== 'function') {
@@ -10321,32 +10383,6 @@
           return this.actualNode.hasAttribute(attrName);
         }
       }, {
-        key: 'getComputedStylePropertyValue',
-        value: function getComputedStylePropertyValue(property) {
-          var key = 'computedStyle_' + property;
-          if (!this._cache.hasOwnProperty(key)) {
-            if (!this._cache.hasOwnProperty('computedStyle')) {
-              this._cache.computedStyle = window.getComputedStyle(this.actualNode);
-            }
-            this._cache[key] = this._cache.computedStyle.getPropertyValue(property);
-          }
-          return this._cache[key];
-        }
-      }, {
-        key: 'props',
-        get: function get() {
-          var _this$actualNode = this.actualNode, nodeType = _this$actualNode.nodeType, nodeName2 = _this$actualNode.nodeName, id = _this$actualNode.id, multiple = _this$actualNode.multiple, nodeValue = _this$actualNode.nodeValue, value = _this$actualNode.value;
-          return {
-            nodeType: nodeType,
-            nodeName: this._isXHTML ? nodeName2 : nodeName2.toLowerCase(),
-            id: id,
-            type: this._type,
-            multiple: multiple,
-            nodeValue: nodeValue,
-            value: value
-          };
-        }
-      }, {
         key: 'attrNames',
         get: function get() {
           if (!this._cache.hasOwnProperty('attrNames')) {
@@ -10361,6 +10397,18 @@
             });
           }
           return this._cache.attrNames;
+        }
+      }, {
+        key: 'getComputedStylePropertyValue',
+        value: function getComputedStylePropertyValue(property) {
+          var key = 'computedStyle_' + property;
+          if (!this._cache.hasOwnProperty(key)) {
+            if (!this._cache.hasOwnProperty('computedStyle')) {
+              this._cache.computedStyle = window.getComputedStyle(this.actualNode);
+            }
+            this._cache[key] = this._cache.computedStyle.getPropertyValue(property);
+          }
+          return this._cache[key];
         }
       }, {
         key: 'isFocusable',
@@ -10691,11 +10739,6 @@
       };
     }
     var get_check_option_default = getCheckOption;
-    function getNodeFromTree(vNode, node) {
-      var el = node || vNode;
-      return cache_default.get('nodeMap') ? cache_default.get('nodeMap').get(el) : null;
-    }
-    var get_node_from_tree_default = getNodeFromTree;
     function getRule(ruleId) {
       var rule3 = axe._audit.rules.find(function(rule4) {
         return rule4.id === ruleId;
@@ -10751,6 +10794,9 @@
       return windowScroll.concat(getElmScrollRecursive(document.body));
     }
     var get_scroll_state_default = getScrollState;
+    function _getStandards() {
+      return clone_default(standards_default);
+    }
     function getStyleSheetFactory(dynamicDoc) {
       if (!dynamicDoc) {
         throw new Error('axe.utils.getStyleSheetFactory should be invoked with an argument');
@@ -10860,6 +10906,19 @@
       return memoized;
     }
     var memoize_default = memoizeImplementation;
+    function nodeSorter(nodeA, nodeB) {
+      nodeA = nodeA.actualNode || nodeA;
+      nodeB = nodeB.actualNode || nodeB;
+      if (nodeA === nodeB) {
+        return 0;
+      }
+      if (nodeA.compareDocumentPosition(nodeB) & 4) {
+        return -1;
+      } else {
+        return 1;
+      }
+    }
+    var node_sorter_default = nodeSorter;
     function parseSameOriginStylesheet(sheet, options, priority, importedUrls) {
       var isCrossOrigin = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : false;
       var rules = Array.from(sheet.cssRules);
@@ -11065,6 +11124,28 @@
         }
       });
     }
+    if (!Array.prototype.findIndex) {
+      Object.defineProperty(Array.prototype, 'findIndex', {
+        value: function value(predicate, thisArg) {
+          if (this === null) {
+            throw new TypeError('Array.prototype.find called on null or undefined');
+          }
+          if (typeof predicate !== 'function') {
+            throw new TypeError('predicate must be a function');
+          }
+          var list = Object(this);
+          var length = list.length >>> 0;
+          var value;
+          for (var i = 0; i < length; i++) {
+            value = list[i];
+            if (predicate.call(thisArg, value, i, list)) {
+              return i;
+            }
+          }
+          return -1;
+        }
+      });
+    }
     function _pollyfillElementsFromPoint() {
       if (document.elementsFromPoint) {
         return document.elementsFromPoint;
@@ -11228,6 +11309,23 @@
         }
       };
     }
+    if (!Array.prototype.flat) {
+      Object.defineProperty(Array.prototype, 'flat', {
+        configurable: true,
+        value: function flat() {
+          var depth = isNaN(arguments[0]) ? 1 : Number(arguments[0]);
+          return depth ? Array.prototype.reduce.call(this, function(acc, cur) {
+            if (Array.isArray(cur)) {
+              acc.push.apply(acc, flat.call(cur, depth - 1));
+            } else {
+              acc.push(cur);
+            }
+            return acc;
+          }, []) : Array.prototype.slice.call(this);
+        },
+        writable: true
+      });
+    }
     function uniqueArray(arr1, arr2) {
       return arr1.concat(arr2).filter(function(elem, pos, arr) {
         return arr.indexOf(elem) === pos;
@@ -11255,8 +11353,8 @@
         var childAny = [];
         var combined = currentLevel.anyLevel.slice().concat(currentLevel.thisLevel);
         var added = false;
-        for (var _i7 = 0; _i7 < combined.length; _i7++) {
-          var exp = combined[_i7];
+        for (var _i8 = 0; _i8 < combined.length; _i8++) {
+          var exp = combined[_i8];
           if ((!exp[0].id || vNode.shadowId === currentLevel.parentShadowId) && _matchesExpression(vNode, exp[0])) {
             if (exp.length === 1) {
               if (!added && (!filter || filter(vNode))) {
@@ -11537,13 +11635,13 @@
         return getDefaultMsg(messages);
       }
     }
-    function extender(checksData, shouldBeTrue) {
+    function extender(checksData, shouldBeTrue, rule3) {
       return function(check4) {
         var sourceData = checksData[check4.id] || {};
         var messages = sourceData.messages || {};
         var data2 = Object.assign({}, sourceData);
         delete data2.messages;
-        if (check4.result === void 0) {
+        if (!rule3.reviewOnFail && check4.result === void 0) {
           if (_typeof(messages.incomplete) === 'object' && !Array.isArray(check4.data)) {
             data2.message = getIncompleteReason(check4.data, messages);
           }
@@ -11564,8 +11662,8 @@
       var rulesData = axe._audit.data.rules || {};
       var rule3 = find_by_default(axe._audit.rules, 'id', ruleResult.id) || {};
       ruleResult.tags = clone_default(rule3.tags || []);
-      var shouldBeTrue = extender(checksData, true);
-      var shouldBeFalse = extender(checksData, false);
+      var shouldBeTrue = extender(checksData, true, rule3);
+      var shouldBeFalse = extender(checksData, false, rule3);
       ruleResult.nodes.forEach(function(detail) {
         detail.any.forEach(shouldBeTrue);
         detail.all.forEach(shouldBeTrue);
@@ -11665,9 +11763,9 @@
         result = nodes;
         nodes = temp;
       }
-      for (var _i8 = 0, l = nodes.length; _i8 < l; _i8++) {
-        if (!result.includes(nodes[_i8])) {
-          result.push(nodes[_i8]);
+      for (var _i9 = 0, l = nodes.length; _i9 < l; _i9++) {
+        if (!result.includes(nodes[_i9])) {
+          result.push(nodes[_i9]);
         }
       }
       return result;
@@ -11697,8 +11795,8 @@
         };
       }(context3);
       var reducedIncludes = reduceIncludes(context3.include);
-      for (var _i9 = 0; _i9 < reducedIncludes.length; _i9++) {
-        candidate = reducedIncludes[_i9];
+      for (var _i10 = 0; _i10 < reducedIncludes.length; _i10++) {
+        candidate = reducedIncludes[_i10];
         result = pushNode(result, query_selector_all_filter_default(candidate, selector, curried));
       }
       if (axe._selectCache) {
@@ -11739,8 +11837,8 @@
       while (lang.length < 3) {
         lang += '`';
       }
-      for (var _i10 = 0; _i10 <= lang.length - 1; _i10++) {
-        var index = lang.charCodeAt(_i10) - 96;
+      for (var _i11 = 0; _i11 <= lang.length - 1; _i11++) {
+        var index = lang.charCodeAt(_i11) - 96;
         array = array[index];
         if (!array) {
           return false;
@@ -11780,6 +11878,11 @@
         return _this2;
       }
       _createClass(SerialVirtualNode, [ {
+        key: 'props',
+        get: function get() {
+          return this._props;
+        }
+      }, {
         key: 'attr',
         value: function attr(attrName) {
           return this._attrs[attrName] || null;
@@ -11788,11 +11891,6 @@
         key: 'hasAttr',
         value: function hasAttr(attrName) {
           return this._attrs[attrName] !== void 0;
-        }
-      }, {
-        key: 'props',
-        get: function get() {
-          return this._props;
         }
       }, {
         key: 'attrNames',
@@ -11861,6 +11959,9 @@
       },
       getExplicitRole: function getExplicitRole() {
         return get_explicit_role_default;
+      },
+      getImplicitRole: function getImplicitRole() {
+        return implicit_role_default;
       },
       getOwnedVirtual: function getOwnedVirtual() {
         return get_owned_virtual_default;
@@ -12155,21 +12256,8 @@
           suggestionsSourceElement = listElement && listElement.nodeName.toLowerCase() === 'datalist';
         }
         switch (vNode.props.type) {
-         case 'button':
-         case 'image':
-         case 'reset':
-         case 'submit':
-          return 'button';
-
          case 'checkbox':
           return 'checkbox';
-
-         case 'email':
-         case 'tel':
-         case 'text':
-         case 'url':
-         case '':
-          return !suggestionsSourceElement ? 'textbox' : 'combobox';
 
          case 'number':
           return 'spinbutton';
@@ -12182,6 +12270,22 @@
 
          case 'search':
           return !suggestionsSourceElement ? 'searchbox' : 'combobox';
+
+         case 'button':
+         case 'image':
+         case 'reset':
+         case 'submit':
+          return 'button';
+
+         case 'text':
+         case 'tel':
+         case 'url':
+         case 'email':
+         case '':
+          return !suggestionsSourceElement ? 'textbox' : 'combobox';
+
+         default:
+          return 'textbox';
         }
       },
       li: 'listitem',
@@ -12223,104 +12327,6 @@
       ul: 'list'
     };
     var implicit_html_roles_default = implicitHtmlRoles;
-    function implicitRole(node) {
-      var vNode = node instanceof abstract_virtual_node_default ? node : get_node_from_tree_default(node);
-      node = vNode.actualNode;
-      if (!vNode) {
-        throw new ReferenceError('Cannot get implicit role of a node outside the current scope.');
-      }
-      if (node && node.namespaceURI === 'http://www.w3.org/2000/svg') {
-        return null;
-      }
-      var nodeName2 = vNode.props.nodeName;
-      var role = implicit_html_roles_default[nodeName2];
-      if (!role) {
-        return null;
-      }
-      if (typeof role === 'function') {
-        return role(vNode);
-      }
-      return role;
-    }
-    var implicit_role_default = implicitRole;
-    var inheritsPresentationChain = {
-      td: [ 'tr' ],
-      th: [ 'tr' ],
-      tr: [ 'thead', 'tbody', 'tfoot', 'table' ],
-      thead: [ 'table' ],
-      tbody: [ 'table' ],
-      tfoot: [ 'table' ],
-      li: [ 'ol', 'ul' ],
-      dt: [ 'dl', 'div' ],
-      dd: [ 'dl', 'div' ],
-      div: [ 'dl' ]
-    };
-    function getInheritedRole(vNode, explicitRoleOptions) {
-      var parentNodeNames = inheritsPresentationChain[vNode.props.nodeName];
-      if (!parentNodeNames) {
-        return null;
-      }
-      if (!vNode.parent) {
-        throw new ReferenceError('Cannot determine role presentational inheritance of a required parent outside the current scope.');
-      }
-      if (!parentNodeNames.includes(vNode.parent.props.nodeName)) {
-        return null;
-      }
-      var parentRole = get_explicit_role_default(vNode.parent, explicitRoleOptions);
-      if ([ 'none', 'presentation' ].includes(parentRole) && !hasConflictResolution(vNode.parent)) {
-        return parentRole;
-      }
-      if (parentRole) {
-        return null;
-      }
-      return getInheritedRole(vNode.parent, explicitRoleOptions);
-    }
-    function resolveImplicitRole(vNode, explicitRoleOptions) {
-      var implicitRole3 = implicit_role_default(vNode);
-      if (!implicitRole3) {
-        return null;
-      }
-      var presentationalRole = getInheritedRole(vNode, explicitRoleOptions);
-      if (presentationalRole) {
-        return presentationalRole;
-      }
-      return implicitRole3;
-    }
-    function hasConflictResolution(vNode) {
-      var hasGlobalAria = get_global_aria_attrs_default().some(function(attr) {
-        return vNode.hasAttr(attr);
-      });
-      return hasGlobalAria || is_focusable_default(vNode);
-    }
-    function resolveRole(node) {
-      var _ref25 = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-      var noImplicit = _ref25.noImplicit, explicitRoleOptions = _objectWithoutProperties(_ref25, [ 'noImplicit' ]);
-      var vNode = node instanceof abstract_virtual_node_default ? node : get_node_from_tree_default(node);
-      if (vNode.props.nodeType !== 1) {
-        return null;
-      }
-      var explicitRole2 = get_explicit_role_default(vNode, explicitRoleOptions);
-      if (!explicitRole2) {
-        return noImplicit ? null : resolveImplicitRole(vNode, explicitRoleOptions);
-      }
-      if (![ 'presentation', 'none' ].includes(explicitRole2)) {
-        return explicitRole2;
-      }
-      if (hasConflictResolution(vNode)) {
-        return noImplicit ? null : resolveImplicitRole(vNode, explicitRoleOptions);
-      }
-      return explicitRole2;
-    }
-    function getRole(node) {
-      var _ref26 = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-      var noPresentational = _ref26.noPresentational, options = _objectWithoutProperties(_ref26, [ 'noPresentational' ]);
-      var role = resolveRole(node, options);
-      if (noPresentational && [ 'presentation', 'none' ].includes(role)) {
-        return null;
-      }
-      return role;
-    }
-    var get_role_default = getRole;
     function fromPrimative(someString, matcher) {
       var matcherType = _typeof(matcher);
       if (Array.isArray(matcher) && typeof someString !== 'undefined') {
@@ -12368,10 +12374,10 @@
       return from_primative_default(get_explicit_role_default(vNode), matcher);
     }
     var explicit_role_default = explicitRole;
-    function implicitRole2(vNode, matcher) {
+    function implicitRole(vNode, matcher) {
       return from_primative_default(implicit_role_default(vNode), matcher);
     }
-    var implicit_role_default2 = implicitRole2;
+    var implicit_role_default2 = implicitRole;
     function nodeName(vNode, matcher) {
       if (!(vNode instanceof abstract_virtual_node_default)) {
         vNode = get_node_from_tree_default(vNode);
@@ -12446,12 +12452,12 @@
       if (!standard.variant) {
         return standard;
       }
-      var variant = standard.variant, spec = _objectWithoutProperties(standard, [ 'variant' ]);
+      var variant = standard.variant, spec = _objectWithoutProperties(standard, _excluded);
       for (var variantName in variant) {
         if (!variant.hasOwnProperty(variantName) || variantName === 'default') {
           continue;
         }
-        var _variant$variantName = variant[variantName], matches14 = _variant$variantName.matches, props = _objectWithoutProperties(_variant$variantName, [ 'matches' ]);
+        var _variant$variantName = variant[variantName], matches14 = _variant$variantName.matches, props = _objectWithoutProperties(_variant$variantName, _excluded2);
         if (matches_default3(vNode, matches14)) {
           for (var propName in props) {
             if (props.hasOwnProperty(propName)) {
@@ -12468,6 +12474,106 @@
       return spec;
     }
     var get_element_spec_default = getElementSpec;
+    function implicitRole2(node) {
+      var _ref25 = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {}, chromium = _ref25.chromium;
+      var vNode = node instanceof abstract_virtual_node_default ? node : get_node_from_tree_default(node);
+      node = vNode.actualNode;
+      if (!vNode) {
+        throw new ReferenceError('Cannot get implicit role of a node outside the current scope.');
+      }
+      var nodeName2 = vNode.props.nodeName;
+      var role = implicit_html_roles_default[nodeName2];
+      if (!role && chromium) {
+        var _get_element_spec_def = get_element_spec_default(vNode), chromiumRole = _get_element_spec_def.chromiumRole;
+        return chromiumRole || null;
+      }
+      if (typeof role === 'function') {
+        return role(vNode);
+      }
+      return role || null;
+    }
+    var implicit_role_default = implicitRole2;
+    var inheritsPresentationChain = {
+      td: [ 'tr' ],
+      th: [ 'tr' ],
+      tr: [ 'thead', 'tbody', 'tfoot', 'table' ],
+      thead: [ 'table' ],
+      tbody: [ 'table' ],
+      tfoot: [ 'table' ],
+      li: [ 'ol', 'ul' ],
+      dt: [ 'dl', 'div' ],
+      dd: [ 'dl', 'div' ],
+      div: [ 'dl' ]
+    };
+    function getInheritedRole(vNode, explicitRoleOptions) {
+      var parentNodeNames = inheritsPresentationChain[vNode.props.nodeName];
+      if (!parentNodeNames) {
+        return null;
+      }
+      if (!vNode.parent) {
+        throw new ReferenceError('Cannot determine role presentational inheritance of a required parent outside the current scope.');
+      }
+      if (!parentNodeNames.includes(vNode.parent.props.nodeName)) {
+        return null;
+      }
+      var parentRole = get_explicit_role_default(vNode.parent, explicitRoleOptions);
+      if ([ 'none', 'presentation' ].includes(parentRole) && !hasConflictResolution(vNode.parent)) {
+        return parentRole;
+      }
+      if (parentRole) {
+        return null;
+      }
+      return getInheritedRole(vNode.parent, explicitRoleOptions);
+    }
+    function resolveImplicitRole(vNode, _ref26) {
+      var chromium = _ref26.chromium, explicitRoleOptions = _objectWithoutProperties(_ref26, _excluded3);
+      var implicitRole3 = implicit_role_default(vNode, {
+        chromium: chromium
+      });
+      if (!implicitRole3) {
+        return null;
+      }
+      var presentationalRole = getInheritedRole(vNode, explicitRoleOptions);
+      if (presentationalRole) {
+        return presentationalRole;
+      }
+      return implicitRole3;
+    }
+    function hasConflictResolution(vNode) {
+      var hasGlobalAria = get_global_aria_attrs_default().some(function(attr) {
+        return vNode.hasAttr(attr);
+      });
+      return hasGlobalAria || is_focusable_default(vNode);
+    }
+    function resolveRole(node) {
+      var _ref27 = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+      var noImplicit = _ref27.noImplicit, roleOptions = _objectWithoutProperties(_ref27, _excluded4);
+      var vNode = node instanceof abstract_virtual_node_default ? node : get_node_from_tree_default(node);
+      if (vNode.props.nodeType !== 1) {
+        return null;
+      }
+      var explicitRole2 = get_explicit_role_default(vNode, roleOptions);
+      if (!explicitRole2) {
+        return noImplicit ? null : resolveImplicitRole(vNode, roleOptions);
+      }
+      if (![ 'presentation', 'none' ].includes(explicitRole2)) {
+        return explicitRole2;
+      }
+      if (hasConflictResolution(vNode)) {
+        return noImplicit ? null : resolveImplicitRole(vNode, roleOptions);
+      }
+      return explicitRole2;
+    }
+    function getRole(node) {
+      var _ref28 = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+      var noPresentational = _ref28.noPresentational, options = _objectWithoutProperties(_ref28, _excluded5);
+      var role = resolveRole(node, options);
+      if (noPresentational && [ 'presentation', 'none' ].includes(role)) {
+        return null;
+      }
+      return role;
+    }
+    var get_role_default = getRole;
     var alwaysTitleElements = [ 'iframe' ];
     function titleText(node) {
       var vNode = node instanceof abstract_virtual_node_default ? node : get_node_from_tree_default(node);
@@ -12481,7 +12587,7 @@
     }
     var title_text_default = titleText;
     function namedFromContents(vNode) {
-      var _ref27 = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {}, strict = _ref27.strict;
+      var _ref29 = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {}, strict = _ref29.strict;
       vNode = vNode instanceof abstract_virtual_node_default ? vNode : get_node_from_tree_default(vNode);
       if (vNode.props.nodeType !== 1) {
         return false;
@@ -12518,7 +12624,8 @@
       var alreadyProcessed2 = accessible_text_virtual_default.alreadyProcessed;
       context3.startNode = context3.startNode || virtualNode;
       var _context = context3, strict = _context.strict, inControlContext = _context.inControlContext, inLabelledByContext = _context.inLabelledByContext;
-      if (alreadyProcessed2(virtualNode, context3) || virtualNode.props.nodeType !== 1) {
+      var _get_element_spec_def2 = get_element_spec_default(virtualNode), contentTypes = _get_element_spec_def2.contentTypes;
+      if (alreadyProcessed2(virtualNode, context3) || virtualNode.props.nodeType !== 1 || contentTypes !== null && contentTypes !== void 0 && contentTypes.includes('embedded')) {
         return '';
       }
       if (!named_from_contents_default(virtualNode, {
@@ -12603,12 +12710,12 @@
       button: ''
     };
     var nativeTextMethods = {
-      valueText: function valueText(_ref28) {
-        var actualNode = _ref28.actualNode;
+      valueText: function valueText(_ref30) {
+        var actualNode = _ref30.actualNode;
         return actualNode.value || '';
       },
-      buttonDefaultText: function buttonDefaultText(_ref29) {
-        var actualNode = _ref29.actualNode;
+      buttonDefaultText: function buttonDefaultText(_ref31) {
+        var actualNode = _ref31.actualNode;
         return defaultButtonValues[actualNode.type] || '';
       },
       tableCaptionText: descendantText.bind(null, 'caption'),
@@ -12628,8 +12735,8 @@
     function attrText(attr, vNode) {
       return vNode.attr(attr) || '';
     }
-    function descendantText(nodeName2, _ref30, context3) {
-      var actualNode = _ref30.actualNode;
+    function descendantText(nodeName2, _ref32, context3) {
+      var actualNode = _ref32.actualNode;
       nodeName2 = nodeName2.toLowerCase();
       var nodeNames = [ nodeName2, actualNode.nodeName.toLowerCase() ].join(',');
       var candidate = actualNode.querySelector(nodeNames);
@@ -12823,8 +12930,8 @@
       }
       return virtualNode.props.nodeValue;
     }
-    function shouldIgnoreHidden(_ref31, context3) {
-      var actualNode = _ref31.actualNode;
+    function shouldIgnoreHidden(_ref33, context3) {
+      var actualNode = _ref33.actualNode;
       if (!actualNode) {
         return false;
       }
@@ -13115,7 +13222,7 @@
       locations: [ 'billing', 'shipping' ]
     };
     function isValidAutocomplete(autocompleteValue) {
-      var _ref32 = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {}, _ref32$looseTyped = _ref32.looseTyped, looseTyped = _ref32$looseTyped === void 0 ? false : _ref32$looseTyped, _ref32$stateTerms = _ref32.stateTerms, stateTerms = _ref32$stateTerms === void 0 ? [] : _ref32$stateTerms, _ref32$locations = _ref32.locations, locations = _ref32$locations === void 0 ? [] : _ref32$locations, _ref32$qualifiers = _ref32.qualifiers, qualifiers = _ref32$qualifiers === void 0 ? [] : _ref32$qualifiers, _ref32$standaloneTerm = _ref32.standaloneTerms, standaloneTerms = _ref32$standaloneTerm === void 0 ? [] : _ref32$standaloneTerm, _ref32$qualifiedTerms = _ref32.qualifiedTerms, qualifiedTerms = _ref32$qualifiedTerms === void 0 ? [] : _ref32$qualifiedTerms;
+      var _ref34 = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {}, _ref34$looseTyped = _ref34.looseTyped, looseTyped = _ref34$looseTyped === void 0 ? false : _ref34$looseTyped, _ref34$stateTerms = _ref34.stateTerms, stateTerms = _ref34$stateTerms === void 0 ? [] : _ref34$stateTerms, _ref34$locations = _ref34.locations, locations = _ref34$locations === void 0 ? [] : _ref34$locations, _ref34$qualifiers = _ref34.qualifiers, qualifiers = _ref34$qualifiers === void 0 ? [] : _ref34$qualifiers, _ref34$standaloneTerm = _ref34.standaloneTerms, standaloneTerms = _ref34$standaloneTerm === void 0 ? [] : _ref34$standaloneTerm, _ref34$qualifiedTerms = _ref34.qualifiedTerms, qualifiedTerms = _ref34$qualifiedTerms === void 0 ? [] : _ref34$qualifiedTerms;
       autocompleteValue = autocompleteValue.toLowerCase().trim();
       stateTerms = stateTerms.concat(_autocomplete.stateTerms);
       if (stateTerms.includes(autocompleteValue) || autocompleteValue === '') {
@@ -13266,8 +13373,8 @@
           idRefs[id] = idRefs[id] || [];
           idRefs[id].push(node);
         }
-        for (var _i11 = 0; _i11 < refAttrs.length; ++_i11) {
-          var attr = refAttrs[_i11];
+        for (var _i12 = 0; _i12 < refAttrs.length; ++_i12) {
+          var attr = refAttrs[_i12];
           var attrValue = sanitize_default(node.getAttribute(attr) || '');
           if (!attrValue) {
             continue;
@@ -13279,8 +13386,8 @@
           }
         }
       }
-      for (var _i12 = 0; _i12 < node.children.length; _i12++) {
-        cacheIdRefs(node.children[_i12], idRefs, refAttrs);
+      for (var _i13 = 0; _i13 < node.children.length; _i13++) {
+        cacheIdRefs(node.children[_i13], idRefs, refAttrs);
       }
     }
     function getAccessibleRefs(node) {
@@ -15145,8 +15252,8 @@
       nodeName: [ 'abbr', 'address', 'canvas', 'div', 'p', 'pre', 'blockquote', 'ins', 'del', 'output', 'span', 'table', 'tbody', 'thead', 'tfoot', 'td', 'em', 'strong', 'small', 's', 'cite', 'q', 'dfn', 'abbr', 'time', 'code', 'var', 'samp', 'kbd', 'sub', 'sup', 'i', 'b', 'u', 'mark', 'ruby', 'rt', 'rp', 'bdi', 'bdo', 'br', 'wbr', 'th', 'tr' ]
     } ];
     lookupTable.evaluateRoleForElement = {
-      A: function A(_ref33) {
-        var node = _ref33.node, out = _ref33.out;
+      A: function A(_ref35) {
+        var node = _ref35.node, out = _ref35.out;
         if (node.namespaceURI === 'http://www.w3.org/2000/svg') {
           return true;
         }
@@ -15155,19 +15262,19 @@
         }
         return true;
       },
-      AREA: function AREA(_ref34) {
-        var node = _ref34.node;
+      AREA: function AREA(_ref36) {
+        var node = _ref36.node;
         return !node.href;
       },
-      BUTTON: function BUTTON(_ref35) {
-        var node = _ref35.node, role = _ref35.role, out = _ref35.out;
+      BUTTON: function BUTTON(_ref37) {
+        var node = _ref37.node, role = _ref37.role, out = _ref37.out;
         if (node.getAttribute('type') === 'menu') {
           return role === 'menuitem';
         }
         return out;
       },
-      IMG: function IMG(_ref36) {
-        var node = _ref36.node, role = _ref36.role, out = _ref36.out;
+      IMG: function IMG(_ref38) {
+        var node = _ref38.node, role = _ref38.role, out = _ref38.out;
         switch (node.alt) {
          case null:
           return out;
@@ -15179,8 +15286,8 @@
           return role !== 'presentation' && role !== 'none';
         }
       },
-      INPUT: function INPUT(_ref37) {
-        var node = _ref37.node, role = _ref37.role, out = _ref37.out;
+      INPUT: function INPUT(_ref39) {
+        var node = _ref39.node, role = _ref39.role, out = _ref39.out;
         switch (node.type) {
          case 'button':
          case 'image':
@@ -15210,32 +15317,32 @@
           return false;
         }
       },
-      LI: function LI(_ref38) {
-        var node = _ref38.node, out = _ref38.out;
+      LI: function LI(_ref40) {
+        var node = _ref40.node, out = _ref40.out;
         var hasImplicitListitemRole = axe.utils.matchesSelector(node, 'ol li, ul li');
         if (hasImplicitListitemRole) {
           return out;
         }
         return true;
       },
-      MENU: function MENU(_ref39) {
-        var node = _ref39.node;
+      MENU: function MENU(_ref41) {
+        var node = _ref41.node;
         if (node.getAttribute('type') === 'context') {
           return false;
         }
         return true;
       },
-      OPTION: function OPTION(_ref40) {
-        var node = _ref40.node;
+      OPTION: function OPTION(_ref42) {
+        var node = _ref42.node;
         var withinOptionList = axe.utils.matchesSelector(node, 'select > option, datalist > option, optgroup > option');
         return !withinOptionList;
       },
-      SELECT: function SELECT(_ref41) {
-        var node = _ref41.node, role = _ref41.role;
+      SELECT: function SELECT(_ref43) {
+        var node = _ref43.node, role = _ref43.role;
         return !node.multiple && node.size <= 1 && role === 'menu';
       },
-      SVG: function SVG(_ref42) {
-        var node = _ref42.node, out = _ref42.out;
+      SVG: function SVG(_ref44) {
+        var node = _ref44.node, out = _ref44.out;
         if (node.parentNode && node.parentNode.namespaceURI === 'http://www.w3.org/2000/svg') {
           return true;
         }
@@ -15360,8 +15467,8 @@
         allowed = unique_array_default(options[role].concat(allowed));
       }
       if (role && allowed) {
-        for (var _i13 = 0; _i13 < attrs.length; _i13++) {
-          var attrName = attrs[_i13];
+        for (var _i14 = 0; _i14 < attrs.length; _i14++) {
+          var attrName = attrs[_i14];
           if (validate_attr_default(attrName) && !allowed.includes(attrName)) {
             invalid.push(attrName + '="' + virtualNode.attr(attrName) + '"');
           }
@@ -15425,29 +15532,37 @@
       return virtualNode.attr('aria-hidden') !== 'true';
     }
     var aria_hidden_body_evaluate_default = ariaHiddenBodyEvaluate;
-    function ariaProhibitedAttrEvaluate(node, options, virtualNode) {
-      var prohibited = [];
-      var role = get_role_default(virtualNode);
-      var attrs = virtualNode.attrNames;
-      var prohibitedAttrs = role ? standards_default.ariaRoles[role].prohibitedAttrs : [ 'aria-label', 'aria-labelledby' ];
-      if (!prohibitedAttrs) {
+    function ariaProhibitedAttrEvaluate(node) {
+      var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+      var virtualNode = arguments.length > 2 ? arguments[2] : undefined;
+      var extraElementsAllowedAriaLabel = options.elementsAllowedAriaLabel || [];
+      var prohibitedList = listProhibitedAttrs(virtualNode, extraElementsAllowedAriaLabel);
+      var prohibited = prohibitedList.filter(function(attrName) {
+        if (!virtualNode.attrNames.includes(attrName)) {
+          return false;
+        }
+        return sanitize_default(virtualNode.attr(attrName)) !== '';
+      });
+      if (prohibited.length === 0) {
         return false;
       }
-      for (var _i14 = 0; _i14 < attrs.length; _i14++) {
-        var attrName = attrs[_i14];
-        var attrValue = sanitize_default(virtualNode.attr(attrName));
-        if (prohibitedAttrs.includes(attrName) && attrValue !== '') {
-          prohibited.push(attrName);
-        }
+      this.data(prohibited);
+      var hasTextContent = sanitize_default(subtree_text_default(virtualNode)) !== '';
+      return hasTextContent ? void 0 : true;
+    }
+    function listProhibitedAttrs(virtualNode, elementsAllowedAriaLabel) {
+      var role = get_role_default(virtualNode, {
+        chromium: true
+      });
+      var roleSpec = standards_default.ariaRoles[role];
+      if (roleSpec) {
+        return roleSpec.prohibitedAttrs || [];
       }
-      if (prohibited.length) {
-        this.data(prohibited);
-        if (!role && sanitize_default(subtree_text_default(virtualNode)) !== '') {
-          return void 0;
-        }
-        return true;
+      var nodeName2 = virtualNode.props.nodeName;
+      if (!!role || elementsAllowedAriaLabel.includes(nodeName2)) {
+        return [];
       }
-      return false;
+      return [ 'aria-label', 'aria-labelledby' ];
     }
     var aria_prohibited_attr_evaluate_default = ariaProhibitedAttrEvaluate;
     var standards_exports = {};
@@ -15574,7 +15689,7 @@
       return false;
     }
     var aria_required_children_evaluate_default = ariaRequiredChildrenEvaluate;
-    function getMissingContext(virtualNode, reqContext, includeElement) {
+    function getMissingContext(virtualNode, ownGroupRoles, reqContext, includeElement) {
       var explicitRole2 = get_explicit_role_default(virtualNode);
       if (!reqContext) {
         reqContext = required_context_default(explicitRole2);
@@ -15586,6 +15701,9 @@
       while (vNode) {
         var parentRole = get_role_default(vNode);
         if (reqContext.includes('group') && parentRole === 'group') {
+          if (ownGroupRoles.includes(explicitRole2)) {
+            reqContext.push(explicitRole2);
+          }
           vNode = vNode.parent;
           continue;
         }
@@ -15614,14 +15732,15 @@
       return owners.length ? owners : null;
     }
     function ariaRequiredParentEvaluate(node, options, virtualNode) {
-      var missingParents = getMissingContext(virtualNode);
+      var ownGroupRoles = options && Array.isArray(options.ownGroupRoles) ? options.ownGroupRoles : [];
+      var missingParents = getMissingContext(virtualNode, ownGroupRoles);
       if (!missingParents) {
         return true;
       }
       var owners = getAriaOwners(node);
       if (owners) {
-        for (var i = 0, l = owners.length; i < l; i++) {
-          missingParents = getMissingContext(get_node_from_tree_default(owners[i]), missingParents, true);
+        for (var _i18 = 0, l = owners.length; _i18 < l; _i18++) {
+          missingParents = getMissingContext(get_node_from_tree_default(owners[_i18]), ownGroupRoles, missingParents, true);
           if (!missingParents) {
             return true;
           }
@@ -15663,16 +15782,15 @@
       return false;
     }
     var aria_unsupported_attr_evaluate_default = ariaUnsupportedAttrEvaluate;
-    function ariaValidAttrEvaluate(node, options) {
+    function ariaValidAttrEvaluate(node, options, virtualNode) {
       options = Array.isArray(options.value) ? options.value : [];
-      var invalid = [], aria43 = /^aria-/;
-      var attr, attrs = get_node_attributes_default(node);
-      for (var i = 0, l = attrs.length; i < l; i++) {
-        attr = attrs[i].name;
-        if (options.indexOf(attr) === -1 && aria43.test(attr) && !validate_attr_default(attr)) {
+      var invalid = [];
+      var aria44 = /^aria-/;
+      virtualNode.attrNames.forEach(function(attr) {
+        if (options.indexOf(attr) === -1 && aria44.test(attr) && !validate_attr_default(attr)) {
           invalid.push(attr);
         }
-      }
+      });
       if (invalid.length) {
         this.data(invalid);
         return false;
@@ -15685,7 +15803,7 @@
       var needsReview = '';
       var messageKey = '';
       var invalid = [];
-      var aria43 = /^aria-/;
+      var aria44 = /^aria-/;
       var attrs = get_node_attributes_default(node);
       var skipAttrs = [ 'aria-errormessage' ];
       var preChecks = {
@@ -15716,10 +15834,10 @@
           }
         }
       };
-      for (var _i18 = 0, l = attrs.length; _i18 < l; _i18++) {
-        var attr = attrs[_i18];
+      for (var _i19 = 0, l = attrs.length; _i19 < l; _i19++) {
+        var attr = attrs[_i19];
         var attrName = attr.name;
-        if (!skipAttrs.includes(attrName) && options.indexOf(attrName) === -1 && aria43.test(attrName) && (preChecks[attrName] ? preChecks[attrName]() : true) && !validate_attr_value_default(node, attrName)) {
+        if (!skipAttrs.includes(attrName) && options.indexOf(attrName) === -1 && aria44.test(attrName) && (preChecks[attrName] ? preChecks[attrName]() : true) && !validate_attr_value_default(node, attrName)) {
           invalid.push(''.concat(attrName, '="').concat(attr.nodeValue, '"'));
         }
       }
@@ -15749,6 +15867,12 @@
       return globalAttrs.length > 0;
     }
     var has_global_aria_attribute_evaluate_default = hasGlobalAriaAttributeEvaluate;
+    function hasImplicitChromiumRoleMatches(node, virtualNode) {
+      return implicit_role_default(virtualNode, {
+        chromium: true
+      }) !== null;
+    }
+    var has_implicit_chromium_role_matches_default = hasImplicitChromiumRoleMatches;
     function hasWidgetRoleEvaluate(node) {
       var role = node.getAttribute('role');
       if (role === null) {
@@ -16272,8 +16396,8 @@
     }
     var th_has_data_cells_evaluate_default = thHasDataCellsEvaluate;
     function hiddenContentEvaluate(node, options, virtualNode) {
-      var whitelist = [ 'SCRIPT', 'HEAD', 'TITLE', 'NOSCRIPT', 'STYLE', 'TEMPLATE' ];
-      if (!whitelist.includes(node.nodeName.toUpperCase()) && has_content_virtual_default(virtualNode)) {
+      var allowlist = [ 'SCRIPT', 'HEAD', 'TITLE', 'NOSCRIPT', 'STYLE', 'TEMPLATE' ];
+      if (!allowlist.includes(node.nodeName.toUpperCase()) && has_content_virtual_default(virtualNode)) {
         var styles = window.getComputedStyle(node);
         if (styles.getPropertyValue('display') === 'none') {
           return void 0;
@@ -16488,7 +16612,7 @@
     }
     var get_background_stack_default = getBackgroundStack;
     function getTextShadowColors(node) {
-      var _ref43 = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {}, minRatio = _ref43.minRatio, maxRatio = _ref43.maxRatio;
+      var _ref45 = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {}, minRatio = _ref45.minRatio, maxRatio = _ref45.maxRatio;
       var style = window.getComputedStyle(node);
       var textShadow = style.getPropertyValue('text-shadow');
       if (textShadow === 'none') {
@@ -16499,8 +16623,8 @@
       assert_default(isNaN(fontSize) === false, 'Unable to determine font-size value '.concat(fontSizeStr));
       var shadowColors = [];
       var shadows = parseTextShadows(textShadow);
-      shadows.forEach(function(_ref44) {
-        var colorStr = _ref44.colorStr, pixels = _ref44.pixels;
+      shadows.forEach(function(_ref46) {
+        var colorStr = _ref46.colorStr, pixels = _ref46.pixels;
         colorStr = colorStr || style.getPropertyValue('color');
         var _pixels = _slicedToArray(pixels, 3), offsetY = _pixels[0], offsetX = _pixels[1], _pixels$ = _pixels[2], blurRadius = _pixels$ === void 0 ? 0 : _pixels$;
         if ((!minRatio || blurRadius >= fontSize * minRatio) && (!maxRatio || blurRadius < fontSize * maxRatio)) {
@@ -16550,8 +16674,8 @@
       }
       return shadows;
     }
-    function textShadowColor(_ref45) {
-      var colorStr = _ref45.colorStr, offsetX = _ref45.offsetX, offsetY = _ref45.offsetY, blurRadius = _ref45.blurRadius, fontSize = _ref45.fontSize;
+    function textShadowColor(_ref47) {
+      var colorStr = _ref47.colorStr, offsetX = _ref47.offsetX, offsetY = _ref47.offsetY, blurRadius = _ref47.blurRadius, fontSize = _ref47.fontSize;
       if (offsetX > blurRadius || offsetY > blurRadius) {
         return new color_default(0, 0, 0, 0);
       }
@@ -16705,18 +16829,18 @@
       }
       var ptSize = Math.ceil(fontSize * 72) / 96;
       var isSmallFont = bold && ptSize < boldTextPt || !bold && ptSize < largeTextPt;
-      var _ref46 = isSmallFont ? contrastRatio.normal : contrastRatio.large, expected = _ref46.expected, minThreshold = _ref46.minThreshold, maxThreshold = _ref46.maxThreshold;
+      var _ref48 = isSmallFont ? contrastRatio.normal : contrastRatio.large, expected = _ref48.expected, minThreshold = _ref48.minThreshold, maxThreshold = _ref48.maxThreshold;
       var isValid = contrast > expected;
-      var parentNode = node.parentElement;
-      while (parentNode) {
-        if (hasPsuedoElement(parentNode, ':before') || hasPsuedoElement(parentNode, ':after')) {
+      var nodeToCheck = node;
+      while (nodeToCheck) {
+        if (hasPsuedoElement(nodeToCheck, ':before') || hasPsuedoElement(nodeToCheck, ':after')) {
           this.data({
             messageKey: 'pseudoContent'
           });
-          this.relatedNodes(parentNode);
+          this.relatedNodes(nodeToCheck);
           return void 0;
         }
-        parentNode = parentNode.parentElement;
+        nodeToCheck = nodeToCheck.parentElement;
       }
       if (typeof minThreshold === 'number' && contrast < minThreshold || typeof maxThreshold === 'number' && contrast > maxThreshold) {
         return true;
@@ -16823,6 +16947,7 @@
       var allowedTypesMap = {
         bday: [ 'text', 'search', 'date' ],
         email: [ 'text', 'search', 'email' ],
+        username: [ 'text', 'search', 'email' ],
         'street-address': [ 'text' ],
         tel: [ 'text', 'search', 'tel' ],
         'tel-country-code': [ 'text', 'search', 'tel' ],
@@ -16969,96 +17094,98 @@
       return elms.length <= 1;
     }
     var page_no_duplicate_evaluate_default = pageNoDuplicateEvaluate;
-    var joinStr = ' > ';
-    function getFramePath(ancestry, nodePath) {
-      ancestry = ancestry.slice(0, ancestry.length - 1);
-      if (nodePath) {
-        ancestry = ancestry.concat(nodePath);
-      }
-      return ancestry.join(joinStr);
-    }
     function headingOrderAfter(results) {
-      if (results.length < 2) {
-        return results;
-      }
-      var pageResult = results.find(function(result) {
-        return !result.node._fromFrame;
-      });
-      var headingOrder = pageResult.data.headingOrder.map(function(heading) {
-        return _extends({}, heading, {
-          ancestry: getFramePath(pageResult.node.ancestry, heading.ancestry)
-        });
-      });
-      var nestedResults = results.filter(function(result) {
-        return result.data && result.data.headingOrder && result.node._fromFrame;
-      });
-      nestedResults.forEach(function(result) {
-        result.data.headingOrder = result.data.headingOrder.map(function(heading) {
-          return _extends({}, heading, {
-            ancestry: getFramePath(result.node.ancestry, heading.ancestry)
-          });
-        });
-      });
-      function getFrameIndex(result) {
-        var path = getFramePath(result.node.ancestry);
-        var heading = headingOrder.find(function(heading2) {
-          return heading2.ancestry === path;
-        });
-        return headingOrder.indexOf(heading);
-      }
-      function replaceFrameWithResults(index, result) {
-        var _headingOrder;
-        (_headingOrder = headingOrder).splice.apply(_headingOrder, [ index, 1 ].concat(_toConsumableArray(result.data.headingOrder)));
-      }
-      var replaced = false;
-      while (nestedResults.length) {
-        for (var _i19 = 0; _i19 < nestedResults.length; ) {
-          var nestedResult = nestedResults[_i19];
-          var index = getFrameIndex(nestedResult);
-          if (index !== -1) {
-            replaceFrameWithResults(index, nestedResult);
-            replaced = true;
-            nestedResults.splice(_i19, 1);
-          } else {
-            _i19++;
-          }
-        }
-        if (!replaced) {
-          throw new Error('Unable to find parent iframe of heading-order results');
-        }
-      }
+      var headingOrder = getHeadingOrder(results);
       results.forEach(function(result) {
-        var path = result.node.ancestry.join(joinStr);
-        var heading = headingOrder.find(function(heading2) {
-          return heading2.ancestry === path;
-        });
-        var index = headingOrder.indexOf(heading);
-        headingOrder.splice(index, 1, {
-          level: headingOrder[index].level,
-          result: result
-        });
+        result.result = getHeadingOrderOutcome(result, headingOrder);
       });
-      headingOrder = headingOrder.filter(function(heading) {
-        return heading.level > 0;
-      });
-      var _loop5 = function _loop5(_i20) {
-        var result = results[_i20];
-        var heading = headingOrder.find(function(heading2) {
-          return heading2.result === result;
-        });
-        var index = headingOrder.indexOf(heading);
-        var currLevel = headingOrder[index].level;
-        var prevLevel = headingOrder[index - 1].level;
-        if (currLevel - prevLevel > 1) {
-          result.result = false;
-        }
-      };
-      for (var _i20 = 1; _i20 < results.length; _i20++) {
-        _loop5(_i20);
-      }
       return results;
     }
-    var heading_order_after_default = headingOrderAfter;
+    function getHeadingOrderOutcome(result, headingOrder) {
+      var _headingOrder$index$l, _headingOrder$index, _headingOrder$level, _headingOrder;
+      var index = findHeadingOrderIndex(headingOrder, result.node.ancestry);
+      var currLevel = (_headingOrder$index$l = (_headingOrder$index = headingOrder[index]) === null || _headingOrder$index === void 0 ? void 0 : _headingOrder$index.level) !== null && _headingOrder$index$l !== void 0 ? _headingOrder$index$l : -1;
+      var prevLevel = (_headingOrder$level = (_headingOrder = headingOrder[index - 1]) === null || _headingOrder === void 0 ? void 0 : _headingOrder.level) !== null && _headingOrder$level !== void 0 ? _headingOrder$level : -1;
+      if (index === 0) {
+        return true;
+      }
+      if (currLevel === -1) {
+        return void 0;
+      }
+      return currLevel - prevLevel <= 1;
+    }
+    function getHeadingOrder(results) {
+      results = _toConsumableArray(results);
+      results.sort(function(_ref49, _ref50) {
+        var nodeA = _ref49.node;
+        var nodeB = _ref50.node;
+        return nodeA.ancestry.length - nodeB.ancestry.length;
+      });
+      var headingOrder = results.reduce(mergeHeadingOrder, []);
+      return headingOrder.filter(function(_ref51) {
+        var level = _ref51.level;
+        return level !== -1;
+      });
+    }
+    function mergeHeadingOrder(mergedHeadingOrder, result) {
+      var _result$data;
+      var frameHeadingOrder = (_result$data = result.data) === null || _result$data === void 0 ? void 0 : _result$data.headingOrder;
+      var frameAncestry = shortenArray(result.node.ancestry, 1);
+      if (!frameHeadingOrder) {
+        return mergedHeadingOrder;
+      }
+      var normalizedHeadingOrder = frameHeadingOrder.map(function(heading) {
+        return addFrameToHeadingAncestry(heading, frameAncestry);
+      });
+      var index = getFrameIndex(mergedHeadingOrder, frameAncestry);
+      if (index === -1) {
+        mergedHeadingOrder.push.apply(mergedHeadingOrder, _toConsumableArray(normalizedHeadingOrder));
+      } else {
+        mergedHeadingOrder.splice.apply(mergedHeadingOrder, [ index, 0 ].concat(_toConsumableArray(normalizedHeadingOrder)));
+      }
+      return mergedHeadingOrder;
+    }
+    function getFrameIndex(headingOrder, frameAncestry) {
+      while (frameAncestry.length) {
+        var index = findHeadingOrderIndex(headingOrder, frameAncestry);
+        if (index !== -1) {
+          return index;
+        }
+        frameAncestry = shortenArray(frameAncestry, 1);
+      }
+      return -1;
+    }
+    function findHeadingOrderIndex(headingOrder, ancestry) {
+      return headingOrder.findIndex(function(heading) {
+        return matchAncestry(heading.ancestry, ancestry);
+      });
+    }
+    function addFrameToHeadingAncestry(heading, frameAncestry) {
+      var ancestry = frameAncestry.concat(heading.ancestry);
+      return _extends({}, heading, {
+        ancestry: ancestry
+      });
+    }
+    function matchAncestry(ancestryA, ancestryB) {
+      if (ancestryA.length !== ancestryB.length) {
+        return false;
+      }
+      return ancestryA.every(function(selectorA, index) {
+        var selectorB = ancestryB[index];
+        if (!Array.isArray(selectorA)) {
+          return selectorA === selectorB;
+        }
+        if (selectorA.length !== selectorB.length) {
+          return false;
+        }
+        return selectorA.every(function(str, index2) {
+          return selectorB[index2] === str;
+        });
+      });
+    }
+    function shortenArray(arr, spliceLength) {
+      return arr.slice(0, arr.length - spliceLength);
+    }
     function getLevel(vNode) {
       var role = vNode.attr('role');
       if (role && role.includes('heading')) {
@@ -17123,25 +17250,25 @@
       if (results.length < 2) {
         return results;
       }
-      var incompleteResults = results.filter(function(_ref47) {
-        var result = _ref47.result;
+      var incompleteResults = results.filter(function(_ref52) {
+        var result = _ref52.result;
         return result !== void 0;
       });
       var uniqueResults = [];
       var nameMap = {};
-      var _loop6 = function _loop6(index) {
+      var _loop5 = function _loop5(index) {
         var _currentResult$relate;
         var currentResult = incompleteResults[index];
         var _currentResult$data = currentResult.data, name = _currentResult$data.name, urlProps = _currentResult$data.urlProps;
         if (nameMap[name]) {
           return 'continue';
         }
-        var sameNameResults = incompleteResults.filter(function(_ref48, resultNum) {
-          var data2 = _ref48.data;
+        var sameNameResults = incompleteResults.filter(function(_ref53, resultNum) {
+          var data2 = _ref53.data;
           return data2.name === name && resultNum !== index;
         });
-        var isSameUrl = sameNameResults.every(function(_ref49) {
-          var data2 = _ref49.data;
+        var isSameUrl = sameNameResults.every(function(_ref54) {
+          var data2 = _ref54.data;
           return isIdenticalObject(data2.urlProps, urlProps);
         });
         if (sameNameResults.length && !isSameUrl) {
@@ -17155,7 +17282,7 @@
         uniqueResults.push(currentResult);
       };
       for (var index = 0; index < incompleteResults.length; index++) {
-        var _ret2 = _loop6(index);
+        var _ret2 = _loop5(index);
         if (_ret2 === 'continue') {
           continue;
         }
@@ -17302,16 +17429,16 @@
       var outerText = elm.textContent.trim();
       var innerText = outerText;
       while (innerText === outerText && nextNode !== void 0) {
-        var _i21 = -1;
+        var _i20 = -1;
         elm = nextNode;
         if (elm.children.length === 0) {
           return elm;
         }
         do {
-          _i21++;
-          innerText = elm.children[_i21].textContent.trim();
-        } while (innerText === '' && _i21 + 1 < elm.children.length);
-        nextNode = elm.children[_i21];
+          _i20++;
+          innerText = elm.children[_i20].textContent.trim();
+        } while (innerText === '' && _i20 + 1 < elm.children.length);
+        nextNode = elm.children[_i20];
       }
       return elm;
     }
@@ -17384,8 +17511,8 @@
       } else if (node !== document.body && has_content_default(node, true)) {
         return [ virtualNode ];
       } else {
-        return virtualNode.children.filter(function(_ref50) {
-          var actualNode = _ref50.actualNode;
+        return virtualNode.children.filter(function(_ref55) {
+          var actualNode = _ref55.actualNode;
           return actualNode.nodeType === 1;
         }).map(function(vNode) {
           return findRegionlessElms(vNode, options);
@@ -17533,8 +17660,8 @@
       if (!virtualNode.children) {
         return void 0;
       }
-      var titleNode = virtualNode.children.find(function(_ref51) {
-        var props = _ref51.props;
+      var titleNode = virtualNode.children.find(function(_ref56) {
+        var props = _ref56.props;
         return props.nodeName === 'title';
       });
       if (!titleNode) {
@@ -17557,23 +17684,23 @@
     }
     var svg_non_empty_title_evaluate_default = svgNonEmptyTitleEvaluate;
     function cssOrientationLockEvaluate(node, options, virtualNode, context3) {
-      var _ref52 = context3 || {}, _ref52$cssom = _ref52.cssom, cssom = _ref52$cssom === void 0 ? void 0 : _ref52$cssom;
-      var _ref53 = options || {}, _ref53$degreeThreshol = _ref53.degreeThreshold, degreeThreshold = _ref53$degreeThreshol === void 0 ? 0 : _ref53$degreeThreshol;
+      var _ref57 = context3 || {}, _ref57$cssom = _ref57.cssom, cssom = _ref57$cssom === void 0 ? void 0 : _ref57$cssom;
+      var _ref58 = options || {}, _ref58$degreeThreshol = _ref58.degreeThreshold, degreeThreshold = _ref58$degreeThreshol === void 0 ? 0 : _ref58$degreeThreshol;
       if (!cssom || !cssom.length) {
         return void 0;
       }
       var isLocked = false;
       var relatedElements = [];
       var rulesGroupByDocumentFragment = groupCssomByDocument(cssom);
-      var _loop7 = function _loop7() {
-        var key = _Object$keys2[_i22];
+      var _loop6 = function _loop6() {
+        var key = _Object$keys2[_i21];
         var _rulesGroupByDocument = rulesGroupByDocumentFragment[key], root = _rulesGroupByDocument.root, rules = _rulesGroupByDocument.rules;
         var orientationRules = rules.filter(isMediaRuleWithOrientation);
         if (!orientationRules.length) {
           return 'continue';
         }
-        orientationRules.forEach(function(_ref54) {
-          var cssRules = _ref54.cssRules;
+        orientationRules.forEach(function(_ref59) {
+          var cssRules = _ref59.cssRules;
           Array.from(cssRules).forEach(function(cssRule) {
             var locked = getIsOrientationLocked(cssRule);
             if (locked && cssRule.selectorText.toUpperCase() !== 'HTML') {
@@ -17584,8 +17711,8 @@
           });
         });
       };
-      for (var _i22 = 0, _Object$keys2 = Object.keys(rulesGroupByDocumentFragment); _i22 < _Object$keys2.length; _i22++) {
-        var _ret3 = _loop7();
+      for (var _i21 = 0, _Object$keys2 = Object.keys(rulesGroupByDocumentFragment); _i21 < _Object$keys2.length; _i21++) {
+        var _ret3 = _loop6();
         if (_ret3 === 'continue') {
           continue;
         }
@@ -17598,8 +17725,8 @@
       }
       return false;
       function groupCssomByDocument(cssObjectModel) {
-        return cssObjectModel.reduce(function(out, _ref55) {
-          var sheet = _ref55.sheet, root = _ref55.root, shadowId = _ref55.shadowId;
+        return cssObjectModel.reduce(function(out, _ref60) {
+          var sheet = _ref60.sheet, root = _ref60.root, shadowId = _ref60.shadowId;
           var key = shadowId ? shadowId : 'topDocument';
           if (!out[key]) {
             out[key] = {
@@ -17615,15 +17742,15 @@
           return out;
         }, {});
       }
-      function isMediaRuleWithOrientation(_ref56) {
-        var type = _ref56.type, cssText = _ref56.cssText;
+      function isMediaRuleWithOrientation(_ref61) {
+        var type = _ref61.type, cssText = _ref61.cssText;
         if (type !== 4) {
           return false;
         }
         return /orientation:\s*landscape/i.test(cssText) || /orientation:\s*portrait/i.test(cssText);
       }
-      function getIsOrientationLocked(_ref57) {
-        var selectorText = _ref57.selectorText, style = _ref57.style;
+      function getIsOrientationLocked(_ref62) {
+        var selectorText = _ref62.selectorText, style = _ref62.style;
         if (!selectorText || style.length <= 0) {
           return false;
         }
@@ -17670,7 +17797,7 @@
         }
       }
       function getAngleInDegrees(angleWithUnit) {
-        var _ref58 = angleWithUnit.match(/(deg|grad|rad|turn)/) || [], _ref59 = _slicedToArray(_ref58, 1), unit = _ref59[0];
+        var _ref63 = angleWithUnit.match(/(deg|grad|rad|turn)/) || [], _ref64 = _slicedToArray(_ref63, 1), unit = _ref64[0];
         if (!unit) {
           return;
         }
@@ -17719,7 +17846,7 @@
     }
     var css_orientation_lock_evaluate_default = cssOrientationLockEvaluate;
     function metaViewportScaleEvaluate(node, options, virtualNode) {
-      var _ref60 = options || {}, _ref60$scaleMinimum = _ref60.scaleMinimum, scaleMinimum = _ref60$scaleMinimum === void 0 ? 2 : _ref60$scaleMinimum, _ref60$lowerBound = _ref60.lowerBound, lowerBound = _ref60$lowerBound === void 0 ? false : _ref60$lowerBound;
+      var _ref65 = options || {}, _ref65$scaleMinimum = _ref65.scaleMinimum, scaleMinimum = _ref65$scaleMinimum === void 0 ? 2 : _ref65$scaleMinimum, _ref65$lowerBound = _ref65.lowerBound, lowerBound = _ref65$lowerBound === void 0 ? false : _ref65$lowerBound;
       var content = virtualNode.attr('content') || '';
       if (!content) {
         return true;
@@ -17749,6 +17876,11 @@
       }
       if (!lowerBound && result['user-scalable'] === 'no') {
         this.data('user-scalable=no');
+        return false;
+      }
+      var userScalableAsFloat = parseFloat(result['user-scalable']);
+      if (!lowerBound && result['user-scalable'] && (userScalableAsFloat || userScalableAsFloat === 0) && userScalableAsFloat > -1 && userScalableAsFloat < 1) {
+        this.data('user-scalable');
         return false;
       }
       if (result['maximum-scale'] && parseFloat(result['maximum-scale']) < scaleMinimum) {
@@ -17830,8 +17962,8 @@
       if (!tabbableElements || !tabbableElements.length) {
         return true;
       }
-      var relatedNodes = tabbableElements.reduce(function(out, _ref61) {
-        var el = _ref61.actualNode;
+      var relatedNodes = tabbableElements.reduce(function(out, _ref66) {
+        var el = _ref66.actualNode;
         var nodeName2 = el.nodeName.toUpperCase();
         if (elementsThatCanBeDisabled.includes(nodeName2)) {
           out.push(el);
@@ -17870,8 +18002,8 @@
     }
     var focusable_element_evaluate_default = focusableElementEvaluate;
     function focusableModalOpenEvaluate(node, options, virtualNode) {
-      var tabbableElements = virtualNode.tabbableElements.map(function(_ref62) {
-        var actualNode = _ref62.actualNode;
+      var tabbableElements = virtualNode.tabbableElements.map(function(_ref67) {
+        var actualNode = _ref67.actualNode;
         return actualNode;
       });
       if (!tabbableElements || !tabbableElements.length) {
@@ -17903,8 +18035,8 @@
       if (!tabbableElements || !tabbableElements.length) {
         return true;
       }
-      var relatedNodes = tabbableElements.reduce(function(out, _ref63) {
-        var el = _ref63.actualNode;
+      var relatedNodes = tabbableElements.reduce(function(out, _ref68) {
+        var el = _ref68.actualNode;
         var nodeName2 = el.nodeName.toUpperCase();
         if (!elementsThatCanBeDisabled.includes(nodeName2)) {
           out.push(el);
@@ -18086,7 +18218,7 @@
       return sanitize_default(noUnicodeStr);
     }
     function labelContentNameMismatchEvaluate(node, options, virtualNode) {
-      var _ref64 = options || {}, pixelThreshold = _ref64.pixelThreshold, occuranceThreshold = _ref64.occuranceThreshold;
+      var _ref69 = options || {}, pixelThreshold = _ref69.pixelThreshold, occuranceThreshold = _ref69.occuranceThreshold;
       var accText = accessible_text_default(node).toLowerCase();
       if (is_human_interpretable_default(accText) < 1) {
         return void 0;
@@ -18376,25 +18508,27 @@
     }
     var caption_evaluate_default = captionEvaluate;
     function frameTestedEvaluate(node, options) {
-      var resolve = this.async();
-      var _Object$assign = Object.assign({
-        isViolation: false,
-        timeout: 500
-      }, options), isViolation = _Object$assign.isViolation, timeout = _Object$assign.timeout;
-      var timer = setTimeout(function() {
-        timer = setTimeout(function() {
-          timer = null;
-          resolve(isViolation ? false : void 0);
-        }, 0);
-      }, timeout);
-      _respondable(node.contentWindow, 'axe.ping', null, void 0, function() {
-        if (timer !== null) {
-          clearTimeout(timer);
-          resolve(true);
-        }
-      });
+      return options.isViolation ? false : void 0;
     }
     var frame_tested_evaluate_default = frameTestedEvaluate;
+    var joinStr = ' > ';
+    function frameTestedAfter(results) {
+      var iframes = {};
+      return results.filter(function(result) {
+        var frameResult = result.node.ancestry[result.node.ancestry.length - 1] !== 'html';
+        if (frameResult) {
+          var ancestry2 = result.node.ancestry.flat(Infinity).join(joinStr);
+          iframes[ancestry2] = result;
+          return true;
+        }
+        var ancestry = result.node.ancestry.slice(0, result.node.ancestry.length - 1).flat(Infinity).join(joinStr);
+        if (iframes[ancestry]) {
+          iframes[ancestry].result = true;
+        }
+        return false;
+      });
+    }
+    var frame_tested_after_default = frameTestedAfter;
     function noAutoplayAudioEvaluate(node, options) {
       if (!node.duration) {
         console.warn('axe.utils.preloadMedia did not load metadata');
@@ -18449,11 +18583,11 @@
     }
     var no_autoplay_audio_evaluate_default = noAutoplayAudioEvaluate;
     function ariaAllowedAttrMatches(node, virtualNode) {
-      var aria43 = /^aria-/;
+      var aria44 = /^aria-/;
       var attrs = virtualNode.attrNames;
       if (attrs.length) {
-        for (var _i23 = 0, l = attrs.length; _i23 < l; _i23++) {
-          if (aria43.test(attrs[_i23])) {
+        for (var _i22 = 0, l = attrs.length; _i22 < l; _i22++) {
+          if (aria44.test(attrs[_i22])) {
             return true;
           }
         }
@@ -18468,17 +18602,11 @@
       }) !== null;
     }
     var aria_allowed_role_matches_default = ariaAllowedRoleMatches;
-    function ariaHasAttrMatches(node) {
-      var aria43 = /^aria-/;
-      if (node.hasAttributes()) {
-        var attrs = get_node_attributes_default(node);
-        for (var i = 0, l = attrs.length; i < l; i++) {
-          if (aria43.test(attrs[i].name)) {
-            return true;
-          }
-        }
-      }
-      return false;
+    function ariaHasAttrMatches(node, virtualNode) {
+      var aria44 = /^aria-/;
+      return virtualNode.attrNames.some(function(attr) {
+        return aria44.test(attr);
+      });
     }
     var aria_has_attr_matches_default = ariaHasAttrMatches;
     function shouldMatchElement(el) {
@@ -18839,7 +18967,7 @@
       if (!role || [ 'none', 'presentation' ].includes(role)) {
         return true;
       }
-      var _ref65 = aria_roles_default[role] || {}, accessibleNameRequired = _ref65.accessibleNameRequired;
+      var _ref70 = aria_roles_default[role] || {}, accessibleNameRequired = _ref70.accessibleNameRequired;
       if (accessibleNameRequired || is_focusable_default(virtualNode)) {
         return true;
       }
@@ -18847,7 +18975,7 @@
     }
     var no_explicit_name_required_matches_default = noExplicitNameRequired;
     function noNamingMethodMatches(node, virtualNode) {
-      var _get_element_spec_def = get_element_spec_default(virtualNode), namingMethods = _get_element_spec_def.namingMethods;
+      var _get_element_spec_def3 = get_element_spec_default(virtualNode), namingMethods = _get_element_spec_def3.namingMethods;
       if (namingMethods && namingMethods.length !== 0) {
         return false;
       }
@@ -18940,6 +19068,7 @@
       'aria-valid-attr-value-evaluate': aria_valid_attr_value_evaluate_default,
       'fallbackrole-evaluate': fallbackrole_evaluate_default,
       'has-global-aria-attribute-evaluate': has_global_aria_attribute_evaluate_default,
+      'has-implicit-chromium-role-matches': has_implicit_chromium_role_matches_default,
       'has-widget-role-evaluate': has_widget_role_evaluate_default,
       'invalidrole-evaluate': invalidrole_evaluate_default,
       'is-element-focusable-evaluate': is_element_focusable_evaluate_default,
@@ -18965,7 +19094,7 @@
       'matches-definition-evaluate': matches_definition_evaluate_default,
       'page-no-duplicate-after': page_no_duplicate_after_default,
       'page-no-duplicate-evaluate': page_no_duplicate_evaluate_default,
-      'heading-order-after': heading_order_after_default,
+      'heading-order-after': headingOrderAfter,
       'heading-order-evaluate': heading_order_evaluate_default,
       'identical-links-same-purpose-after': identical_links_same_purpose_after_default,
       'identical-links-same-purpose-evaluate': identical_links_same_purpose_evaluate_default,
@@ -19022,6 +19151,7 @@
       'structured-dlitems-evaluate': structured_dlitems_evaluate_default,
       'caption-evaluate': caption_evaluate_default,
       'frame-tested-evaluate': frame_tested_evaluate_default,
+      'frame-tested-after': frame_tested_after_default,
       'no-autoplay-audio-evaluate': no_autoplay_audio_evaluate_default,
       'aria-allowed-attr-matches': aria_allowed_attr_matches_default,
       'aria-allowed-role-matches': aria_allowed_role_matches_default,
@@ -19113,7 +19243,7 @@
           result = this.evaluate.call(helper, node.actualNode, checkOptions, node, context3);
         } catch (e) {
           if (node && node.actualNode) {
-            e.errorNode = new dq_element_default(node.actualNode).toJSON();
+            e.errorNode = new dq_element_default(node).toJSON();
           }
           reject(e);
           return;
@@ -19143,7 +19273,7 @@
         result = this.evaluate.call(helper, node.actualNode, checkOptions, node, context3);
       } catch (e) {
         if (node && node.actualNode) {
-          e.errorNode = new dq_element_default(node.actualNode).toJSON();
+          e.errorNode = new dq_element_default(node).toJSON();
         }
         throw e;
       }
@@ -19309,7 +19439,7 @@
           checkQueue.then(function(results) {
             var result = getResult(results);
             if (result) {
-              result.node = new dq_element_default(node.actualNode, options);
+              result.node = new dq_element_default(node, options);
               ruleResult.nodes.push(result);
               if (_this4.reviewOnFail) {
                 [ 'any', 'all' ].forEach(function(type) {
@@ -19370,7 +19500,7 @@
         });
         var result = getResult(results);
         if (result) {
-          result.node = node.actualNode ? new dq_element_default(node.actualNode, options) : null;
+          result.node = node.actualNode ? new dq_element_default(node, options) : null;
           ruleResult.nodes.push(result);
           if (_this5.reviewOnFail) {
             [ 'any', 'all' ].forEach(function(type) {
@@ -19650,8 +19780,8 @@
             lang: this.lang
           };
           var checkIDs = Object.keys(this.data.checks);
-          for (var _i24 = 0; _i24 < checkIDs.length; _i24++) {
-            var id = checkIDs[_i24];
+          for (var _i23 = 0; _i23 < checkIDs.length; _i23++) {
+            var id = checkIDs[_i23];
             var check4 = this.data.checks[id];
             var _check4$messages = check4.messages, pass = _check4$messages.pass, fail = _check4$messages.fail, incomplete = _check4$messages.incomplete;
             locale.checks[id] = {
@@ -19661,8 +19791,8 @@
             };
           }
           var ruleIDs = Object.keys(this.data.rules);
-          for (var _i25 = 0; _i25 < ruleIDs.length; _i25++) {
-            var _id = ruleIDs[_i25];
+          for (var _i24 = 0; _i24 < ruleIDs.length; _i24++) {
+            var _id = ruleIDs[_i24];
             var rule3 = this.data.rules[_id];
             var description = rule3.description, help = rule3.help;
             locale.rules[_id] = {
@@ -19671,8 +19801,8 @@
             };
           }
           var failureSummaries = Object.keys(this.data.failureSummaries);
-          for (var _i26 = 0; _i26 < failureSummaries.length; _i26++) {
-            var type = failureSummaries[_i26];
+          for (var _i25 = 0; _i25 < failureSummaries.length; _i25++) {
+            var type = failureSummaries[_i25];
             var failureSummary2 = this.data.failureSummaries[type];
             var failureMessage = failureSummary2.failureMessage;
             locale.failureSummaries[type] = {
@@ -19695,8 +19825,8 @@
         key: '_applyCheckLocale',
         value: function _applyCheckLocale(checks) {
           var keys = Object.keys(checks);
-          for (var _i27 = 0; _i27 < keys.length; _i27++) {
-            var id = keys[_i27];
+          for (var _i26 = 0; _i26 < keys.length; _i26++) {
+            var id = keys[_i26];
             if (!this.data.checks[id]) {
               throw new Error('Locale provided for unknown check: "'.concat(id, '"'));
             }
@@ -19707,8 +19837,8 @@
         key: '_applyRuleLocale',
         value: function _applyRuleLocale(rules) {
           var keys = Object.keys(rules);
-          for (var _i28 = 0; _i28 < keys.length; _i28++) {
-            var id = keys[_i28];
+          for (var _i27 = 0; _i27 < keys.length; _i27++) {
+            var id = keys[_i27];
             if (!this.data.rules[id]) {
               throw new Error('Locale provided for unknown rule: "'.concat(id, '"'));
             }
@@ -19719,8 +19849,8 @@
         key: '_applyFailureSummaries',
         value: function _applyFailureSummaries(messages) {
           var keys = Object.keys(messages);
-          for (var _i29 = 0; _i29 < keys.length; _i29++) {
-            var key = keys[_i29];
+          for (var _i28 = 0; _i28 < keys.length; _i28++) {
+            var key = keys[_i28];
             if (!this.data.failureSummaries[key]) {
               throw new Error('Locale provided for unknown failureMessage: "'.concat(key, '"'));
             }
@@ -20063,8 +20193,8 @@
         });
       };
     }
-    function getHelpUrl(_ref66, ruleId, version) {
-      var brand = _ref66.brand, application = _ref66.application, lang = _ref66.lang;
+    function getHelpUrl(_ref71, ruleId, version) {
+      var brand = _ref71.brand, application = _ref71.application, lang = _ref71.lang;
       return constants_default.helpUrlBase + brand + '/' + (version || axe.version.substring(0, axe.version.lastIndexOf('.'))) + '/' + ruleId + '?application=' + encodeURIComponent(application) + (lang && lang !== 'en' ? '&lang=' + encodeURIComponent(lang) : '');
     }
     var audit_default = Audit;
@@ -20180,8 +20310,8 @@
         });
       }
     }
-    function getRootNode2(_ref67) {
-      var include = _ref67.include, exclude = _ref67.exclude;
+    function getRootNode2(_ref72) {
+      var include = _ref72.include, exclude = _ref72.exclude;
       var selectors = Array.from(include).concat(Array.from(exclude));
       for (var i = 0; i < selectors.length; ++i) {
         var item = selectors[i];
@@ -20784,8 +20914,8 @@
       var transformedResults = results.map(function(result) {
         var transformedResult = _extends({}, result);
         var types = [ 'passes', 'violations', 'incomplete', 'inapplicable' ];
-        for (var _i30 = 0, _types = types; _i30 < _types.length; _i30++) {
-          var type = _types[_i30];
+        for (var _i29 = 0, _types = types; _i29 < _types.length; _i29++) {
+          var type = _types[_i29];
           if (transformedResult[type] && Array.isArray(transformedResult[type])) {
             transformedResult[type] = transformedResult[type].map(function(typeResult) {
               return _extends({}, typeResult, {
@@ -21059,8 +21189,8 @@
           help: 'Form field must not have multiple label elements'
         },
         'frame-focusable-content': {
-          description: 'Ensures <frame> and <iframe> elements with tabindex=-1 do not have focusable content',
-          help: 'Frames with tabindex=-1 must not have focusable content'
+          description: 'Ensures <frame> and <iframe> elements with focusable content do not have tabindex=-1',
+          help: 'Frames with focusable content must not have tabindex=-1'
         },
         'frame-tested': {
           description: 'Ensures <iframe> and <frame> elements contain the axe-core script',
@@ -21340,10 +21470,10 @@
           }
         },
         'aria-prohibited-attr': {
-          impact: 'critical',
+          impact: 'serious',
           messages: {
             pass: 'ARIA attribute is allowed',
-            fail: 'ARIA attribute cannot be used: ${data.values}',
+            fail: 'ARIA attribute cannot be used, add a role attribute or use a different element: ${data.values}',
             incomplete: 'ARIA attribute is not well supported on the element and the text content will be used instead: ${data.values}'
           }
         },
@@ -21842,7 +21972,8 @@
           impact: 'moderate',
           messages: {
             pass: 'Heading order valid',
-            fail: 'Heading order invalid'
+            fail: 'Heading order invalid',
+            incomplete: 'Unable to determine previous heading'
           }
         },
         'identical-links-same-purpose': {
@@ -22203,7 +22334,12 @@
       tags: [ 'cat.aria', 'wcag2a', 'wcag412' ],
       all: [],
       any: [ 'aria-allowed-attr' ],
-      none: [ 'aria-unsupported-attr', 'aria-prohibited-attr' ]
+      none: [ 'aria-unsupported-attr', {
+        options: {
+          elementsAllowedAriaLabel: [ 'applet', 'input' ]
+        },
+        id: 'aria-prohibited-attr'
+      } ]
     }, {
       id: 'aria-allowed-role',
       excludeHidden: false,
@@ -22328,7 +22464,12 @@
       matches: 'aria-required-parent-matches',
       tags: [ 'cat.aria', 'wcag2a', 'wcag131' ],
       all: [],
-      any: [ 'aria-required-parent' ],
+      any: [ {
+        options: {
+          ownGroupRoles: [ 'listitem', 'treeitem' ]
+        },
+        id: 'aria-required-parent'
+      } ],
       none: []
     }, {
       id: 'aria-roledescription',
@@ -22631,7 +22772,7 @@
       none: []
     }, {
       id: 'frame-tested',
-      selector: 'frame, iframe',
+      selector: 'html, frame, iframe',
       tags: [ 'cat.structure', 'review-item', 'best-practice' ],
       all: [ {
         options: {
@@ -22963,6 +23104,7 @@
     }, {
       id: 'meta-viewport-large',
       selector: 'meta[name="viewport"]',
+      matches: 'is-initiator-matches',
       excludeHidden: false,
       tags: [ 'cat.sensory-and-visual-cues', 'best-practice' ],
       all: [],
@@ -22977,6 +23119,7 @@
     }, {
       id: 'meta-viewport',
       selector: 'meta[name="viewport"]',
+      matches: 'is-initiator-matches',
       excludeHidden: false,
       tags: [ 'cat.sensory-and-visual-cues', 'best-practice', 'ACT' ],
       all: [],
@@ -23060,6 +23203,7 @@
       none: []
     }, {
       id: 'presentation-role-conflict',
+      matches: 'has-implicit-chromium-role-matches',
       selector: '[role="none"], [role="presentation"]',
       tags: [ 'cat.aria', 'best-practice' ],
       all: [],
@@ -23237,7 +23381,10 @@
       evaluate: 'aria-hidden-body-evaluate'
     }, {
       id: 'aria-prohibited-attr',
-      evaluate: 'aria-prohibited-attr-evaluate'
+      evaluate: 'aria-prohibited-attr-evaluate',
+      options: {
+        elementsAllowedAriaLabel: [ 'applet', 'input' ]
+      }
     }, {
       id: 'aria-required-attr',
       evaluate: 'aria-required-attr-evaluate'
@@ -23249,7 +23396,10 @@
       }
     }, {
       id: 'aria-required-parent',
-      evaluate: 'aria-required-parent-evaluate'
+      evaluate: 'aria-required-parent-evaluate',
+      options: {
+        ownGroupRoles: [ 'listitem', 'treeitem' ]
+      }
     }, {
       id: 'aria-roledescription',
       evaluate: 'aria-roledescription-evaluate',
@@ -23469,6 +23619,7 @@
     }, {
       id: 'frame-tested',
       evaluate: 'frame-tested-evaluate',
+      after: 'frame-tested-after',
       options: {
         isViolation: false
       }
