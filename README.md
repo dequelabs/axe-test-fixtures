@@ -434,7 +434,7 @@ describe('allowedOrigins', () => {
 
   it('should not set when running runPartial and not legacy mode', async () => {
     await page.goto(`${addr}/index.html`);
-    await new AxePuppeteer(page)
+    await new AxeBuilder(page)
       .analyze()
     const allowedOrigins = await getAllowedOrigins()
     assert.deepEqual(allowedOrigins, [addr])
@@ -442,7 +442,7 @@ describe('allowedOrigins', () => {
 
   it('should not set when running runPartial and legacy mode', async () => {
     await page.goto(`${addr}/index.html`);
-    await new AxePuppeteer(page)
+    await new AxeBuilder(page)
       .setLegacyMode(true)
       .analyze()
     const allowedOrigins = await getAllowedOrigins()
@@ -451,7 +451,7 @@ describe('allowedOrigins', () => {
 
   it('should not set when running legacy source and legacy mode', async () => {
     await page.goto(`${addr}/index.html`);
-    await new AxePuppeteer(page, axeSource + axeForceLegacy)
+    await new AxeBuilder(page, legacyAxeSource)
       .setLegacyMode(true)
       .analyze()
     const allowedOrigins = await getAllowedOrigins()
@@ -460,7 +460,7 @@ describe('allowedOrigins', () => {
 
   it('should set when running legacy source and not legacy mode', async () => {
     await page.goto(`${addr}/index.html`);
-    await new AxePuppeteer(page, axeSource + axeForceLegacy)
+    await new AxeBuilder(page, legacyAxeSource)
       .analyze()
     const allowedOrigins = await getAllowedOrigins()
     assert.deepEqual(allowedOrigins, ['*'])
