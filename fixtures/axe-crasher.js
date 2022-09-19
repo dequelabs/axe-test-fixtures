@@ -7,6 +7,14 @@ if (document.documentElement.classList.contains('crash')) {
     window.axe.runPartial = function () {
       throw new Error('Crashing axe.runPartial(). Boom!');
     };
+  } else if (axe.frameMessenger) {
+    // Makes axe-core unresponsive to other frames
+    // Timeouts will do the rest
+    axe.frameMessenger({
+      open: function() {},
+      post: function() {},
+      close: function() {}
+    });
   } else if (axe.utils.respondable) {
     axe.utils.respondable.subscribe('axe.ping', () => {
       // Makes axe-core unresponsive to other frames
