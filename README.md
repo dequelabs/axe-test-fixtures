@@ -423,6 +423,7 @@ describe('with a custom ruleset', () => {
               'input'
             ]
           })
+          .options({ runOnly: 'label' })
           .analyze();
 
         assert.equal(violations[0].id, 'label');
