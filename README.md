@@ -411,6 +411,28 @@ describe('with a custom ruleset', () => {
       assert.isTrue(flatPassesTargets(results).includes('#shadow-button-1'));
       assert.isFalse(flatPassesTargets(results).includes('#shadow-button-2'));
     });
+
+    it('with labelled iframe and shadow DOM', async () => {
+        await driver.get(`${addr}/shadow-frames.html`);
+        const results = await new AxeBuilder(driver)
+          .exclude({
+            fromFrames: [
+              {
+                fromShadowDom: ['#shadow-root', '#shadow-frame']
+              },
+              'input'
+            ]
+          })
+          .analyze();
+
+        assert.equal(violations[0].id, 'label');
+        assert.lengthOf(violations[0].nodes, 2);
+
+        const nodes = violations[0].nodes;
+        assert.deepEqual(nodes[0].target, ['#light-frame', 'input']);
+        assert.deepEqual(nodes[1].target, ['#slotted-frame', 'input']);
+      });
+    })
   });
 });
 
