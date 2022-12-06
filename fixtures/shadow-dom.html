@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Nested Frames</title>
+  </head>
+  <body>
+    <h1>This page has shadow DOM!</h1>
+    <button id="button">Outside</button>
+    <div id="shadow-root-1">
+      <button id="light-button">Light</button>
+    </div>
+    <div id="shadow-root-2"></div>
+
+    <script>
+      const shadowRoot1 = document
+        .querySelector('#shadow-root-1')
+        .attachShadow({ mode: 'open' });
+      shadowRoot1.innerHTML = `
+        <button id="shadow-button-1">Shadow</button>
+        <slot />
+      `;
+
+      const shadowRoot2 = document
+        .querySelector('#shadow-root-2')
+        .attachShadow({ mode: 'open' });
+      shadowRoot2.innerHTML = `
+        <button id="shadow-button-2">Shadow</button>
+        <slot />
+      `;
+    </script>
+  </body>
+</html>

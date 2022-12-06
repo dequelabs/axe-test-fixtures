@@ -235,7 +235,7 @@ describe('with a custom ruleset', () => {
 
   const dylangConfig = require('./fixtures/dylang-config.json');
 
-  it('should find violations with customized helpUrl', async function () {
+  it('should find violations with customized helpUrl', async () => {
     await page.goto(`${addr}/index.html`);
     const { violations, passes } = await new AxePuppeteer(page)
       .configure(dylangConfig)
@@ -247,7 +247,7 @@ describe('with a custom ruleset', () => {
     assert.lengthOf(violations[0].nodes, 1);
   });
 
-  it('configures in nested frames', async function () {
+  it('configures in nested frames', async () => {
     await page.goto(`${addr}/nested-iframes.html`);
     const { violations } = await new AxePuppeteer(page)
       .configure(dylangConfig)
@@ -280,11 +280,11 @@ describe('with a custom ruleset', () => {
           return acc.concat(pass.nodes);
         }, [])
         .reduce((acc, node) => {
-          return acc.concat(node.target);
+          return acc.concat(node.target.flat(1));
         }, []);
     };
 
-    it('with only include', async function () {
+    it('with only include', async () => {
       await page.goto(`${addr}/context-include-exclude.html`);
       const results = await new AxePuppeteer(page)
         .include('.include')
@@ -295,7 +295,7 @@ describe('with a custom ruleset', () => {
       assert.isTrue(flatPassesTargets(results).includes('.include2'));
     });
 
-    it('with only exclude', async function () {
+    it('with only exclude', async () => {
       await page.goto(`${addr}/context-include-exclude.html`);
       const results = await new AxePuppeteer(page)
         .exclude('.exclude')
@@ -306,7 +306,7 @@ describe('with a custom ruleset', () => {
       assert.isFalse(flatPassesTargets(results).includes('.exclude2'));
     });
 
-    it('with include and exclude', async function () {
+    it('with include and exclude', async () => {
       await page.goto(`${addr}/context-include-exclude.html`);
       const results = await new AxePuppeteer(page)
         .include('.include')
@@ -321,7 +321,7 @@ describe('with a custom ruleset', () => {
       assert.isFalse(flatPassesTargets(results).includes('.exclude2'));
     });
 
-    it('with include and exclude iframes', async function () {
+    it('with include and exclude iframes', async () => {
       await page.goto(`${addr}/context-include-exclude.html`);
       const results = await new AxePuppeteer(page)
         .include(['#ifr-inc-excl', 'html'])
@@ -339,7 +339,7 @@ describe('with a custom ruleset', () => {
       expect(labelResult).to.be.undefined;
     });
 
-    it('with include and exclude iframes', async function () {
+    it('with include iframes', async () => {
       await page.goto(`${addr}/context-include-exclude.html`);
       const results = await new AxePuppeteer(page)
           .include(['#ifr-inc-excl', '#foo-baz', 'html'])
@@ -347,8 +347,6 @@ describe('with a custom ruleset', () => {
           // does not exist
           .include(['#hazaar', 'html'])
           .analyze();
-
-        console.log(flatPassesTargets(results));
 
         const labelResult = results.violations.find(
           (r: Axe.Result) => r.id === 'label'
@@ -361,6 +359,57 @@ describe('with a custom ruleset', () => {
         // does not exist
         assert.isFalse(flatPassesTargets(results).includes('#hazaar'));
         expect(labelResult).not.to.be.undefined;
+    });
+
+    it('with labelled frame', async () => {
+      await page.goto(`${addr}/context-include-exclude.html`);
+      const results = await new AxePuppeteer(page)
+        .include({ fromFrames: ['#ifr-inc-excl', 'html'] })
+        .exclude({ fromFrames: ['#ifr-inc-excl', '#foo-bar'] })
+        .include({ fromFrames: ['#ifr-inc-excl', '#foo-baz', 'html'] })
+        .exclude({ fromFrames: ['#ifr-inc-excl', '#foo-baz', 'input'] })
+        .analyze();
+
+      const labelResult = results.violations.find(
+        (r: Axe.Result) => r.id === 'label'
+      );
+
+      assert.isFalse(flatPassesTargets(results).includes('#foo-bar'));
+      assert.isFalse(flatPassesTargets(results).includes('input'));
+      expect(labelResult).to.be.undefined;
+    });
+
+    it('with include shadow DOM', async () => {
+      await page.goto(`${addr}/shadow-dom.html`);
+      const results = await new AxePuppeteer(page)
+        .include([['#shadow-root-1', '#shadow-button-1']])
+        .include([['#shadow-root-2', '#shadow-button-2']])
+        .analyze();
+
+      assert.isTrue(flatPassesTargets(results).includes('#shadow-button-1'));
+      assert.isTrue(flatPassesTargets(results).includes('#shadow-button-2'));
+    });
+
+    it('with exclude shadow DOM', async () => {
+      await page.goto(`${addr}/shadow-dom.html`);
+      const results = await new AxePuppeteer(page)
+        .exclude([['#shadow-root-1', '#shadow-button-1']])
+        .exclude([['#shadow-root-2', '#shadow-button-2']])
+        .analyze();
+
+      assert.isFalse(flatPassesTargets(results).includes('#shadow-button-1'));
+      assert.isFalse(flatPassesTargets(results).includes('#shadow-button-2'));
+    });
+
+    it('with labelled shadow DOM', async () => {
+      await page.goto(`${addr}/shadow-dom.html`);
+      const results = await new AxePuppeteer(page)
+        .include({ fromShadowDom: ['#shadow-root-1', '#shadow-button-1'] })
+        .exclude({ fromShadowDom: ['#shadow-root-2', '#shadow-button-2'] })
+        .analyze();
+
+      assert.isTrue(flatPassesTargets(results).includes('#shadow-button-1'));
+      assert.isFalse(flatPassesTargets(results).includes('#shadow-button-2'));
     });
   });
 });
