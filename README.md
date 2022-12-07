@@ -388,6 +388,7 @@ describe('with a custom ruleset', () => {
 
       assert.isTrue(flatPassesTargets(results).includes('#shadow-button-1'));
       assert.isTrue(flatPassesTargets(results).includes('#shadow-button-2'));
+      assert.isFalse(flatPassesTargets(results).includes('#button'));
     });
 
     it('with exclude shadow DOM', async () => {
@@ -399,6 +400,7 @@ describe('with a custom ruleset', () => {
 
       assert.isFalse(flatPassesTargets(results).includes('#shadow-button-1'));
       assert.isFalse(flatPassesTargets(results).includes('#shadow-button-2'));
+      assert.isTrue(flatPassesTargets(results).includes('#button'));
     });
 
     it('with labelled shadow DOM', async () => {
