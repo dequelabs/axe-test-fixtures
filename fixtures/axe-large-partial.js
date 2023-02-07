@@ -27,7 +27,7 @@ const ruleResult = {
   result: 'inapplicable',
   nodes: []
 };
-for (let i = 0; i < 200_000; i++) {
+for (let i = 0; i < 500_000; i++) {
   ruleResult.nodes.push(getNode());
 };
 
