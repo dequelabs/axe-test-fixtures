@@ -62,6 +62,7 @@ describe('analyze', () => {
   });
 
   it('handles large partial results', async function() {
+    /* this test handles a large amount of partial results a timeout may be required */
     this.timeout(20_000);
     await driver.get(`${addr}/external/index.html`);
 
