@@ -10,6 +10,7 @@ Using the fixtures, the following tests should be applied to the project (code w
 const axeSource = fs.readFileSync('axe-core@4.3.2.js', 'utf8');
 const legacyAxeSource = fs.readFileSync('fixtures/axe-core@legacy.js', 'utf8');
 const axeCrasherSource = fs.readFileSync('fixtures/axe-crasher.js', 'utf8');
+const axeLargePartial = fs.readFileSync('fixtures/axe-large-partial.js', 'utf8');
 
 describe('analyze', () => {
   // ...
@@ -58,6 +59,20 @@ describe('analyze', () => {
   it('properly isolates the call to axe.finishRun', () => {
     await driver.get('${addr}/isolated-finish.html');
     assert.isFulfilled(new AxeBuilder(driver).analyze());
+  });
+
+  it('handles large partial results', async function() {
+    /* this test handles a large amount of partial results a timeout may be required */
+    this.timeout(20_000);
+    await driver.get(`${addr}/external/index.html`);
+
+    const results = await new AxeBuilder(
+      driver,
+      axeSource + axeLargePartial
+    ).analyze();
+
+    assert.lengthOf(results.passes, 1);
+    assert.equal(results.passes[0].id, 'duplicate-id');
   });
 
   it('returns correct results metadata', async () => {
