@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Watcher Fixtures</title>
+  </head>
+  <body>
+    <main>
+      <h1>Watcher Test Cases</h1>
+
+      <div style="margin-bottom: 5em">
+        <h2>Test Case 1 - Button Click</h2>
+
+        <div id="color-block">This isn't readable is it...</div>
+        <button onclick="updateColour()">Click me</button>
+
+        <style>
+          #color-block {
+            background-color: white;
+            color: white;
+            width: 100px;
+            height: 100px;
+            margin-bottom: 1em;
+            display: none;
+          }
+        </style>
+
+        <script>
+          function updateColour() {
+            const colorBlock = document.getElementById("color-block");
+            colorBlock.style.backgroundColor = "gray";
+            colorBlock.style.display = "block";
+
+            document.title = "Watcher - Test Case 1 - Button Click";
+          }
+        </script>
+      </div>
+
+      <div style="margin-bottom: 5em">
+        <h2>Test Case 2 - Radio Buttons</h2>
+        <h3>Best Coffee Drink:</h3>
+
+        <input type="radio" id="cappuccino" name="coffee" value="cappuccino" />
+        <label for="cappuccino">Cappuccino</label>
+        <input type="radio" id="latte" name="coffee" value="latte" />
+        <label for="latte">Latte</label>
+        <input type="radio" id="espresso" name="coffee" value="espresso" />
+        <label for="espresso">Espresso</label>
+
+        <div id="radio-result"></div>
+
+        <style>
+          #radio-result {
+            color: gray;
+            width: 100px;
+            height: 100px;
+            margin-top: 1em;
+            display: none;
+          }
+        </style>
+
+        <script>
+          const radioResult = document.getElementById("radio-result");
+          const radioButtons = document.querySelectorAll("input[name=coffee]");
+
+          radioButtons.forEach((radioButton) => {
+            radioButton.addEventListener("click", (event) => {
+              if (event.target.value === "cappuccino") {
+                radioResult.innerText = "Cappuccino? Wrong!";
+              } else if (event.target.value === "latte") {
+                radioResult.innerText = "Latte? Still wrong!";
+              } else if (event.target.value === "espresso") {
+                radioResult.innerText = "Espresso? Hazaar!";
+              }
+
+              radioResult.style.display = "block";
+              document.title = `Watcher - Test Case 2 - ${event.target.value}`;
+            });
+          });
+        </script>
+      </div>
+
+      <div style="margin-bottom: 5em">
+        <h2>Test Case 4 - Same Origin iFrames</h2>
+
+        <iframe
+          title="Same Origin IFrame"
+          src="./child-frame.html"
+          style="height: 300px; width: 300px"
+        />
+      </div>
+    </main>
+  </body>
+</html>
