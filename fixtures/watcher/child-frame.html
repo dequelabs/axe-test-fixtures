@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Watcher - Same Origin iFrame</title>
+  </head>
+
+  <body>
+    <main>
+      <div style="margin-bottom: 5em">
+        <h2>iFrame Test Case 1 - Button Click</h2>
+
+        <div id="color-block">This isn't readable is it...</div>
+        <button onclick="updateColour()">Click me</button>
+
+        <style>
+          #color-block {
+            background-color: white;
+            color: white;
+            width: 100px;
+            height: 100px;
+            margin-bottom: 1em;
+            display: none;
+          }
+        </style>
+
+        <script>
+          function updateColour() {
+            const colorBlock = document.getElementById("color-block");
+            colorBlock.style.backgroundColor = "gray";
+            colorBlock.style.display = "block";
+
+            document.title = "Watcher - iFrame Test Case 1 - Button Click";
+          }
+        </script>
+      </div>
+    </main>
+  </body>
+</html>
