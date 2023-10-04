@@ -1,6 +1,7 @@
 {
   "name": "axe-test-fixtures",
   "version": "1.0.0",
+  "main": "index.js",
   "description": "Fixtures for testing integrations of axe-core",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
