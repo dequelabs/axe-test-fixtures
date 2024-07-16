@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Drag and Drop Test</title>
+    <style>
+      .back-link {
+        display: block;
+        margin-bottom: 10px;
+        color: blue;
+        cursor: pointer;
+      }
+
+      .drag-and-drop {
+        display: flex;
+        gap: 20px;
+      }
+
+      .small-box {
+        width: 100px;
+        height: 100px;
+        background-color: red;
+        cursor: grab;
+      }
+
+      .small-box.dragging {
+        opacity: 0.5;
+      }
+
+      .large-box {
+        width: 300px;
+        height: 300px;
+        border: 2px solid #000;
+        background-color: lightgray;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+      }
+
+      .large-box.inside {
+        background-color: lightgreen;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="drag-and-drop">
+      <div class="small-box" id="small-box" draggable="true">Drag me!</div>
+      <div class="large-box" id="large-box">Drag the small box here.</div>
+    </div>
+
+    <script>
+      const smallBox = document.getElementById('small-box')
+      const largeBox = document.getElementById('large-box')
+
+      smallBox.addEventListener('dragstart', event => {
+        event.dataTransfer.setData('text/plain', event.target.id)
+        smallBox.classList.add('dragging')
+      })
+
+      smallBox.addEventListener('dragend', () => {
+        smallBox.classList.remove('dragging')
+      })
+
+      largeBox.addEventListener('dragenter', event => {
+        event.preventDefault()
+        largeBox.classList.add('inside')
+      })
+
+      largeBox.addEventListener('dragleave', () => {
+        largeBox.classList.remove('inside')
+      })
+
+      largeBox.addEventListener('dragover', event => {
+        event.preventDefault()
+      })
+
+      largeBox.addEventListener('drop', event => {
+        event.preventDefault()
+        const data = event.dataTransfer.getData('text/plain')
+        if (data === 'small-box') {
+          largeBox.textContent = 'Success!'
+        }
+        smallBox.classList.remove('dragging')
+        largeBox.classList.add('inside')
+      })
+    </script>
+  </body>
+</html>

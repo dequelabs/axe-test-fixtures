@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>Interactive Test Fixture</title>
+  </head>
+  <body>
+    <h1>Delayed Mounting Fixture</h1>
+    <section id="headers"></section>
+
+    <script>
+      const headersSection = document.getElementById('headers')
+      const addHeader = (number, text) => {
+        const header = document.createElement('h6')
+        header.id = `h6-${number}`
+        header.textContent = text
+        headersSection.appendChild(header)
+      }
+      setTimeout(() => {
+        addHeader(1, 'First')
+      }, 500)
+      setTimeout(() => {
+        addHeader(2, 'Second')
+      }, 100)
+      setTimeout(() => {
+        addHeader(3, 'Third')
+      }, 300)
+    </script>
+  </body>
+</html>

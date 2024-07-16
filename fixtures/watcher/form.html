@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>Interactive Test Fixture</title>
+    <style>
+      .scrollable-div {
+        height: 50px;
+        overflow: auto;
+        border: 1px solid #000;
+        padding: 10px;
+      }
+
+      .hover-button {
+        background-color: lightgray; /* Initial background color */
+        padding: 5px 10px; /* Button padding */
+      }
+
+      .hover-button:hover {
+        background-color: gray; /* Background color on hover */
+      }
+    </style>
+  </head>
+  <body>
+    <form>
+      <label for="input">Enter text:</label>
+      <input
+        data-testid="input"
+        id="input"
+        type="text"
+        placeholder="Enter text here"
+      />
+
+      <label for="select">Select Option:</label>
+
+      <select data-testid="select" id="select">
+        <option value="option-1">Option 1</option>
+        <option value="option-2">Option 2</option>
+        <option value="option-3">Option 3</option>
+      </select>
+
+      <label for="file-input">File:</label>
+      <input
+        data-testid="file-input"
+        id="file-input"
+        type="file"
+        placeholder="file input placeholder"
+      />
+
+      <p id="select-value"></p>
+
+      <p id="input-value"></p>
+
+      <button>Submit Form</button>
+    </form>
+
+    <script>
+      const input = document.querySelector('#input')
+      const inputValue = document.querySelector('#input-value')
+
+      const select = document.querySelector('#select')
+      const selectValue = document.querySelector('#select-value')
+
+      input.addEventListener('input', e => {
+        inputValue.textContent = e.target?.value
+      })
+
+      input.removeEventListener('input', () => {
+        inputValue.textContent = ''
+      })
+
+      input.addEventListener('click', e => {
+        inputValue.textContent = 'Input was clicked'
+      })
+
+      input.removeEventListener('click', e => {
+        inputValue.textContent = ''
+      })
+
+      select.addEventListener('change', e => {
+        selectValue.textContent = e.target?.value
+      })
+
+      select.removeEventListener('change', () => {
+        selectValue.textContent = ''
+      })
+    </script>
+  </body>
+</html>

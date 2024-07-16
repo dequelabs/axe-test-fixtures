@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>FrameBox</title>
+  </head>
+  <body>
+    <p id="keyboard-action-content"></p>
+
+    <p id="mouse-action-content"></p>
+
+    <script>
+      const keyboardContent = document.querySelector('#keyboard-action-content')
+      const mouseContent = document.querySelector('#mouse-action-content')
+
+      const keyevent = (event, type) => {
+        keyboardContent.textContent = `${type} event, key - ${event.key}`
+      }
+
+      document.addEventListener('keydown', event => keyevent(event, 'keydown'))
+      document.addEventListener('keypress', event =>
+        keyevent(event, 'keypress')
+      )
+      document.addEventListener('keyup', event => keyevent(event, 'keyup'))
+      document.addEventListener('input', event => keyevent(event, 'input'))
+
+      document.removeEventListener('keydown', event =>
+        keyevent(event, 'keydown')
+      )
+      document.removeEventListener('keypress', event =>
+        keyevent(event, 'keypress')
+      )
+      document.removeEventListener('input', event => keyevent(event, 'input'))
+      document.removeEventListener('keyup', event => keyevent(event, 'keyup'))
+
+      document.addEventListener('mousemove', () => {
+        mouseContent.textContent = `Mouse moving!`
+      })
+    </script>
+  </body>
+</html>

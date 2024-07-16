@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>Tabs Test Fixture</title>
+  </head>
+  <style>
+    .low-contrast /* 4:1 */ {
+      background-color: #fff;
+      color: #f00;
+    }
+
+    [role='tablist'] {
+      min-width: 100%;
+    }
+
+    [role='tab'],
+    [role='tab']:focus,
+    [role='tab']:hover {
+      display: inline-block;
+      position: relative;
+      z-index: 2;
+      top: 2px;
+      margin: 0;
+      margin-top: 4px;
+      padding: 3px 3px 4px;
+      border: 1px solid hsl(219deg 1% 72%);
+      border-bottom: 2px solid hsl(219deg 1% 72%);
+      border-radius: 5px 5px 0 0;
+      background: hsl(220deg 20% 94%);
+      outline: none;
+      font-weight: bold;
+      max-width: 22%;
+      overflow: hidden;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    [role='tab'][aria-selected='true'] {
+      padding: 2px 2px 4px;
+      margin-top: 0;
+      border-width: 2px;
+      border-top-width: 6px;
+      border-top-color: rgb(36 116 214);
+      border-bottom-color: hsl(220deg 43% 99%);
+      background: hsl(220deg 43% 99%);
+    }
+
+    [role='tab'][aria-selected='false'] {
+      border-bottom: 1px solid hsl(219deg 1% 72%);
+    }
+
+    [role='tab']:focus-visible {
+      padding: 2px 4px;
+      border: 2px solid rgb(36 116 214);
+      border-radius: 3px;
+    }
+    [role='tab'][aria-selected='true']:focus-visible {
+      border-top-width: 6px;
+    }
+
+    [role='tabpanel'] {
+      padding: 5px;
+      border: 2px solid hsl(219deg 1% 72%);
+      border-radius: 0 5px 5px;
+      background: hsl(220deg 43% 99%);
+      min-height: 10em;
+      width: 100%;
+      overflow: auto;
+    }
+
+    [role='tabpanel'].is-hidden {
+      display: none;
+    }
+
+    [role='tabpanel'] p {
+      margin: 0;
+    }
+  </style>
+  <body>
+    <main>
+      <h1>Tabs Test Fixture</h1>
+
+      <p>
+        This fixture contains a tab control based on a slimmed-down version of
+        the
+        <a href="https://www.w3.org/WAI/ARIA/apg/"
+          >ARIA Authoring Practices Guide</a
+        >'s
+        <a
+          href="https://www.w3.org/WAI/ARIA/apg/patterns/tabs/examples/tabs-manual/"
+          >Example of Tabs with Manual Activation</a
+        >.
+      </p>
+
+      <p>
+        The number of tabs and of accessibility violations within each tab can
+        be controlled by the <code>tabViolations</code> query parameter, which
+        should be a comma-separated list of numbers (eg,
+        <code>tabViolations=2,3,4</code> for 3 tabs with 2, 3, and 4 violations
+        respectively).
+      </p>
+
+      <h2 id="tablist-label">Test Tab Control</h2>
+      <div
+        id="tab-container"
+        role="tablist"
+        aria-labelledby="tablist-label"
+      ></div>
+      <div id="tabpanel-container"></div>
+
+      <script>
+        const urlParams = new URLSearchParams(window.location.search)
+        const tabViolationsParam = urlParams.get('tabViolations') || '2,1,0'
+        const tabViolations = tabViolationsParam
+          .split(',')
+          .map(v => parseInt(v, 10) || 0)
+
+        const tabContainer = document.getElementById('tab-container')
+        const tabPanelContainer = document.getElementById('tabpanel-container')
+
+        function onTabClick(tabIndex) {
+          const newSelection = tabContainer.children[tabIndex]
+          for (var i = 0; i < tabContainer.children.length; i += 1) {
+            var tab = tabContainer.children[i]
+            if (newSelection === tab) {
+              tab.setAttribute('aria-selected', 'true')
+              tabPanelContainer.children[i].classList.remove('is-hidden')
+            } else {
+              tab.setAttribute('aria-selected', 'false')
+              tabPanelContainer.children[i].classList.add('is-hidden')
+            }
+          }
+        }
+
+        function onTabKeyDown(tabIndex, event) {
+          const key = event.key
+          if (key === 'ArrowRight' || key === 'ArrowLeft') {
+            let newTabIndex = key === 'ArrowRight' ? tabIndex + 1 : tabIndex - 1
+            newTabIndex =
+              (newTabIndex + tabViolations.length) % tabViolations.length
+            tabContainer.children[newTabIndex].focus()
+          } else if (key === 'Home') {
+            tabContainer.children[0].focus()
+          } else if (key === 'End') {
+            tabContainer.children[tabViolations.length - 1].focus()
+          } else {
+            return
+          }
+          event.stopPropagation()
+          event.preventDefault()
+        }
+
+        // Create tabs based on the number of tabViolations
+        for (let i = 0; i < tabViolations.length; i++) {
+          const tabLabel = 'Tab ' + (i + 1)
+          const tabId = 'tab-' + (i + 1)
+          const tabPanelId = 'tabpanel-' + (i + 1)
+
+          const tab = document.createElement('button')
+          tab.id = tabId
+          tab.setAttribute('data-testid', tabId)
+          tab.textContent = tabLabel
+          tab.setAttribute('role', 'tab')
+          tab.setAttribute('aria-controls', tabPanelId)
+          tab.setAttribute('aria-selected', 'false')
+          tab.setAttribute('tabindex', '0')
+          tab.addEventListener('click', () => onTabClick(i))
+          tab.addEventListener('keydown', e => onTabKeyDown(i, e))
+          tabContainer.appendChild(tab)
+
+          const tabPanel = document.createElement('div')
+          tabPanel.id = tabPanelId
+          tabPanel.setAttribute('role', 'tabpanel')
+          tabPanel.setAttribute('aria-labelledby', tabId)
+          tabPanel.classList.add('is-hidden')
+          tabPanelContainer.appendChild(tabPanel)
+
+          tabPanel.innerHTML = `
+          <h3>Tab ${i + 1} with ${tabViolations[i]} violations</h3>
+          <ul class="violations-container low-contrast"></ul>
+        ${i === 0 ? '<button type="button" id="show-panel-2-button" onclick="onTabClick(1)">Show Panel 2</button>' : ''}
+        `
+          const violationsContainer = tabPanel.querySelector(
+            '.violations-container'
+          )
+
+          for (let j = 1; j <= tabViolations[i]; j++) {
+            const violationElement = document.createElement('li')
+            violationElement.id = `tab-${i + 1}-violation-${j}`
+            violationElement.textContent = 'color-contrast violation ' + j
+            violationsContainer.appendChild(violationElement)
+          }
+        }
+
+        onTabClick(0)
+      </script>
+    </main>
+  </body>
+</html>

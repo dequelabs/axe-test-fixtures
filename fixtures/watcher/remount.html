@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>Continuous Button Remounting</title>
+    <script>
+      const urlParams = new URLSearchParams(window.location.search)
+      const unmountDuringAxe =
+        !!urlParams.get('unmountDuringAxe') &&
+        urlParams.get('unmountDuringAxe') !== 'false'
+      const remountIntervalMs =
+        parseInt(urlParams.get('remountInterval'), 10) || 0
+      const axeRunDelayMs = parseInt(urlParams.get('axeRunDelay'), 10) || 0
+
+      function onAxeInProgress() {
+        if (unmountDuringAxe) {
+          unmountButton('permanent')
+        }
+        if (axeRunDelayMs) {
+          const start = Date.now()
+          while (Date.now() - start < axeRunDelayMs) {}
+        }
+      }
+
+      function unmountButton(duration = 'temporary') {
+        const oldButton = document.getElementById('target')
+        if (oldButton) {
+          oldButton.parentNode.removeChild(oldButton)
+        }
+        if (duration === 'permanent') {
+          clearInterval(remountTimer)
+        }
+      }
+
+      let remountTimer
+      function remountButton() {
+        unmountButton('temporary')
+        const button = document.createElement('button')
+        button.setAttribute('id', 'target')
+        button.innerHTML = `Target Button (continuously remounted every ${remountIntervalMs}ms)`
+        document.getElementById('target-container').appendChild(button)
+      }
+
+      remountTimer = setInterval(remountButton, remountIntervalMs)
+      window.addEventListener('DOMContentLoaded', remountButton)
+
+      function remountScrollableParent() {
+        const oldParent = document.getElementById('remount-parent')
+        if (oldParent) {
+          oldParent.parentNode.removeChild(oldParent)
+        }
+
+        const parent = document.createElement('div')
+        parent.setAttribute('id', 'remount-parent')
+        parent.setAttribute('style', 'height: 100px; overflow: hidden;')
+        const button = document.createElement('button')
+        button.setAttribute('id', 'remount-target')
+        button.setAttribute('style', 'margin-top: 900px; height: 100px;')
+        button.innerHTML = `Scrollable Target Button (continously remounted every ${remountIntervalMs}ms)`
+        parent.appendChild(button)
+        document.getElementById('remount-container').appendChild(parent)
+      }
+
+      setInterval(remountScrollableParent, remountIntervalMs)
+      window.addEventListener('DOMContentLoaded', remountScrollableParent)
+
+      window.addEventListener('message', event => {
+        try {
+          if (JSON.parse(event.data).payload.axe === true) {
+            onAxeInProgress()
+          }
+        } catch (e) {}
+      })
+    </script>
+  </head>
+  <body>
+    <h1>Continuous Button Remounting Test Fixture</h1>
+    <p>
+      The below <code>#target</code> button will be continuously removed and
+      re-added from the DOM.
+    </p>
+    <p>
+      You can use the <code>remountInterval</code> query parameter to control
+      the remount interval:
+    </p>
+    <ul>
+      <li><a href="?remountInterval=0">0 (every animation frame)</a></li>
+      <li><a href="?remountInterval=100">100ms</a></li>
+      <li><a href="?remountInterval=1000">1000ms</a></li>
+    </ul>
+    <p>Other available query parameters are:</p>
+    <ul>
+      <li>
+        <a href="?unmountDuringAxe=1"
+          >unmountDuringAxe: causes the target button to permanently unmount
+          during the first axe.run on the page</a
+        >
+      </li>
+      <li>
+        <a href="?axeRunDelay=500"
+          >axeRunDelay: number of milliseconds to busy-loop for while axe.run
+          tries to make progress</a
+        >
+      </li>
+    </ul>
+
+    <div id="target-container"></div>
+
+    <div id="remount-container">
+      <div id="remount-parent" style="height: 100px; overflow: hidden">
+        <button
+          id="remount-target"
+          style="margin-top: 900px; height: 100px"
+        ></button>
+      </div>
+    </div>
+
+    <!--
+      This iframe causes axe.run to send window messages during axe.run, which is how
+      unmountDuringAxe and axeRunDelay are able to hook into the axe.run timing even
+      when axe.run is happening in an extension content script's isolated JavaScript world
+    -->
+    <iframe src="./static.html?violations=0"></iframe>
+  </body>
+</html>

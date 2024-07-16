@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>Checkbox Change Page State</title>
+  </head>
+  <body>
+    <label for="checkbox"> Check me to change page state </label>
+
+    <input
+      data-testid="checkbox"
+      type="checkbox"
+      id="checkbox"
+      placeholder="checkbox placeholder"
+    />
+
+    <div id="content">
+      <p>This content changes when the checkbox is checked.</p>
+    </div>
+
+    <script>
+      const checkbox = document.getElementById('checkbox')
+      const content = document.getElementById('content')
+
+      checkbox.addEventListener('change', () => {
+        if (checkbox.checked) {
+          content.innerHTML = '<p>The checkbox is checked!</p>'
+        } else {
+          content.innerHTML =
+            '<p>This content changes when the checkbox is checked.</p>'
+        }
+      })
+    </script>
+  </body>
+</html>
