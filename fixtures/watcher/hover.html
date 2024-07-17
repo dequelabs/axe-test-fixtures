@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <style>
+      /* Style for the button */
+      #hover-button {
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.3s ease;
+      }
+      /* Hover effect */
+      #hover-button:hover {
+        background-color: #0056b3;
+      }
+    </style>
+    <title>Hover Text Fixture</title>
+  </head>
+  <body>
+    <label for="hover-button">Hover label</label>
+    <button data-testid="hover-button" id="hover-button">Hover over me</button>
+
+    <img id="hover-image" alt="hover-alt" src="" />
+
+    <input id="hover-input" placeholder="Hover over me placeholder" />
+
+    <div id="content">
+      <p>This content changes when you hover over the button.</p>
+    </div>
+
+    <script>
+      const button = document.querySelector('#hover-button')
+      const img = document.querySelector('#hover-image')
+      const input = document.querySelector('#hover-input')
+
+      const content = document.getElementById('content')
+
+      function showText() {
+        content.innerHTML = '<p>Hover effect triggered!</p>'
+      }
+
+      function hideText() {
+        content.innerHTML =
+          '<p>This content changes when you hover over the button.</p>'
+      }
+
+      button.addEventListener('mouseenter', showText)
+      button.addEventListener('mouseleave', hideText)
+
+      img.addEventListener('mouseenter', showText)
+      img.addEventListener('mouseleave', hideText)
+
+      input.addEventListener('mouseenter', showText)
+      input.addEventListener('mouseleave', hideText)
+    </script>
+  </body>
+</html>

@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>Interactive Test Fixture</title>
+    <style>
+      #scrollable-div {
+        height: 50px;
+        overflow: auto;
+        border: 1px solid #000;
+        padding: 10px;
+      }
+
+      #hover-button {
+        background-color: lightgray; /* Initial background color */
+        padding: 5px 10px; /* Button padding */
+      }
+
+      #hover-button:hover {
+        background-color: gray; /* Background color on hover */
+      }
+
+      p {
+        height: 50px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Interactive Test Fixture</h1>
+    <div data-testid="scrollable-div" id="scrollable-div">
+      Scrollable container
+      <p>Content line 1</p>
+      <p>Content line 2</p>
+      <p>Content line 3</p>
+      <p>Content line 4</p>
+      <p>Content line 5</p>
+      <p>Content line 6</p>
+      <p>Content line 7</p>
+      <p>Content line 8</p>
+      <p>Content line 9</p>
+      <p id="content-10">Content line 10</p>
+    </div>
+    <input type="text" placeholder="Enter text here" />
+    <button id="hover-button">Hover me</button>
+
+    <label for="focus-input">Focus input:</label>
+    <input
+      data-testid="focus-input"
+      type="text"
+      id="focus-input"
+      placeholder="Focus me"
+    />
+
+    <script>
+      const focusInput = document.querySelector('#focus-input')
+      const content = document.querySelector('#content-10')
+
+      focusInput.addEventListener('focus', () => {
+        content.innerHTML = '<p>The input is focused!</p>'
+      })
+
+      focusInput.removeEventListener('focus', () => {
+        content.innerHTML = '<p>Content line 10</p>'
+      })
+    </script>
+  </body>
+</html>

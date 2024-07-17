@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>FrameBox</title>
+  </head>
+  <body>
+    <iframe id="frame" name="frame-name"></iframe>
+    <iframe id="second-frame" name="second-frame-name"></iframe>
+
+    <button id="outer-button">Outer Button</button>
+
+    <script>
+      const frameContent = `
+        <!DOCTYPE html>
+        <html lang="en">
+          <head>
+            <title>FrameBox Content</title>
+          </head>
+          <body>
+            <button id='frame-button'>Frame Button</button>
+          </body>
+        </html>
+      `
+
+      document.querySelector('#frame').srcdoc = frameContent
+      document.querySelector('#second-frame').srcdoc = frameContent
+    </script>
+  </body>
+</html>

@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>Static Test Fixture</title>
+  </head>
+  <style>
+    .low-contrast /* 4:1 */ {
+      background-color: #fff;
+      color: #f00;
+    }
+  </style>
+  <body>
+    <main>
+      <h1>Static Test Fixture</h1>
+
+      <p>
+        Use the <code>violations</code> query parameter to control how many
+        artificial accessibility violations are injected into the page.
+      </p>
+
+      <ul id="violations-container" class="low-contrast"></ul>
+
+      <script>
+        const urlParams = new URLSearchParams(window.location.search)
+        const violations = parseInt(urlParams.get('violations'), 10) ?? 3
+
+        const violationsContainer = document.getElementById(
+          'violations-container'
+        )
+
+        for (let i = 1; i <= violations; i++) {
+          const violationElement = document.createElement('li')
+          violationElement.id = 'violation-' + i
+          violationElement.textContent = 'color-contrast violation ' + i
+          violationsContainer.appendChild(violationElement)
+        }
+      </script>
+    </main>
+  </body>
+</html>

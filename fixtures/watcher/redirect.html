@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Redirecting to Protected Page</title>
+    <script>
+      const redirectURL = window.location.href.replace(
+        'redirect.html',
+        'tabs.html'
+      )
+      window.onload = function () {
+        setTimeout(function () {
+          window.location.href = redirectURL
+        }, 1000)
+      }
+    </script>
+  </head>
+  <body>
+    <h1>Some Redirecting mechanism</h1>
+    <p>...</p>
+  </body>
+</html>
