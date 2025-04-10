@@ -31,7 +31,6 @@
         }
       }
 
-      let remountTimer;
       function remountButton() {
         unmountButton("temporary");
 
@@ -79,7 +78,7 @@
         remountButton();
         remountScrollableParent();
 
-        remountTimer = setInterval(remountButton, remountIntervalMs);
+        setInterval(remountButton, remountIntervalMs);
         setInterval(remountScrollableParent, remountIntervalMs);
       });
 
